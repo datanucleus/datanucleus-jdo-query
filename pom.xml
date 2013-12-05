@@ -25,9 +25,9 @@
     </licenses>
 
     <scm>
-        <connection>scm:svn:svn://andy_jefferson@svn.code.sf.net/p/datanucleus/code/platform/jdo.query/trunk</connection>
-        <developerConnection>scm:svn:svn+ssh://andy_jefferson@svn.code.sf.net/p/datanucleus/code/platform/jdo.query/trunk</developerConnection>
-        <url>http://svn.code.sf.net/p/datanucleus/code/platform/jdo.query/trunk</url>
+        <connection>scm:git:git://github.com/datanucleus/datanucleus-jdo-query.git</connection>
+        <url>https://github.com/datanucleus/datanucleus-jdo-query</url>
+        <developerConnection>scm:git:git://github.com/datanucleus/datanucleus-jdo-query.git</developerConnection>
     </scm>
 
     <developers>
