@@ -88,7 +88,6 @@ import org.datanucleus.util.AnnotationProcessorUtils.TypeCategory;
  * Specify the compiler argument "queryMode" as "PROPERTY" to get this</li>
  * <li>Field access - so users type in "field1", "field1.field2". This is the default.</li>
  * </ul>
- * </p>
  * TODO Change "supportedAnnotationTypes" to be "*" and then detect XML files and generate the required class
  */
 @SupportedAnnotationTypes({"javax.jdo.annotations.PersistenceCapable"})
