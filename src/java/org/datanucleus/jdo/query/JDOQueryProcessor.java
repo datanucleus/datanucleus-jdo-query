@@ -39,8 +39,10 @@ import javax.lang.model.element.TypeElement;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
 import javax.lang.model.util.Elements;
+import javax.tools.Diagnostic.Kind;
 import javax.tools.JavaFileObject;
 
+// TODO Drop these references
 import org.datanucleus.api.jdo.query.BooleanExpressionImpl;
 import org.datanucleus.api.jdo.query.ByteExpressionImpl;
 import org.datanucleus.api.jdo.query.CharacterExpressionImpl;
@@ -48,7 +50,6 @@ import org.datanucleus.api.jdo.query.CollectionExpressionImpl;
 import org.datanucleus.api.jdo.query.DateExpressionImpl;
 import org.datanucleus.api.jdo.query.DateTimeExpressionImpl;
 import org.datanucleus.api.jdo.query.ExpressionType;
-import org.datanucleus.api.jdo.query.JDOTypesafeQuery;
 import org.datanucleus.api.jdo.query.ListExpressionImpl;
 import org.datanucleus.api.jdo.query.MapExpressionImpl;
 import org.datanucleus.api.jdo.query.NumericExpressionImpl;
@@ -56,6 +57,9 @@ import org.datanucleus.api.jdo.query.ObjectExpressionImpl;
 import org.datanucleus.api.jdo.query.PersistableExpressionImpl;
 import org.datanucleus.api.jdo.query.StringExpressionImpl;
 import org.datanucleus.api.jdo.query.TimeExpressionImpl;
+
+import org.datanucleus.jdo.query.AnnotationProcessorUtils.TypeCategory;
+
 import org.datanucleus.query.typesafe.BooleanExpression;
 import org.datanucleus.query.typesafe.ByteExpression;
 import org.datanucleus.query.typesafe.CharacterExpression;
@@ -69,18 +73,17 @@ import org.datanucleus.query.typesafe.ObjectExpression;
 import org.datanucleus.query.typesafe.PersistableExpression;
 import org.datanucleus.query.typesafe.StringExpression;
 import org.datanucleus.query.typesafe.TimeExpression;
-import org.datanucleus.util.AnnotationProcessorUtils;
-import org.datanucleus.util.AnnotationProcessorUtils.TypeCategory;
+import org.datanucleus.query.typesafe.TypesafeQuery;
 
 /**
  * Annotation processor for JDO to generate "dummy" classes for all persistable classes for use with the 
- * Typesafe Query API. Any class ({MyClass}) that has a JDO "class" annotation will have a stub class 
- * (Q{MyClass}) generated.
+ * Typesafe Query API. Any class ({MyClass}) that has a JDO "class" annotation will have a stub class (Q{MyClass}) generated.
  * <ul>
  * <li>For each managed class X in package p, a metamodel class QX in package p is created.</li>
  * <li>The name of the metamodel class is derived from the name of the managed class by prepending "Q" 
  * to the name of the managed class.</li>
  * </ul>
+ * 
  * <p>
  * This processor can generate classes in two modes.
  * <ul>
@@ -88,7 +91,6 @@ import org.datanucleus.util.AnnotationProcessorUtils.TypeCategory;
  * Specify the compiler argument "queryMode" as "PROPERTY" to get this</li>
  * <li>Field access - so users type in "field1", "field1.field2". This is the default.</li>
  * </ul>
- * TODO Change "supportedAnnotationTypes" to be "*" and then detect XML files and generate the required class
  */
 @SupportedAnnotationTypes({"javax.jdo.annotations.PersistenceCapable"})
 public class JDOQueryProcessor extends AbstractProcessor
@@ -103,16 +105,21 @@ public class JDOQueryProcessor extends AbstractProcessor
     public int fieldDepth = 5;
 
     @Override
-    public synchronized void init(ProcessingEnvironment processingEnv)
+    public synchronized void init(ProcessingEnvironment pe)
     {
-        super.init(processingEnv);
+        super.init(pe);
+
+        pe.getMessager().printMessage(Kind.NOTE, "DataNucleus JDO AnnotationProcessor for generating Typesafe classes");// TODO Where does this go?
 
         // Get the query mode
-        String queryMode = processingEnv.getOptions().get(OPTION_MODE);
+        String queryMode = pe.getOptions().get(OPTION_MODE);
         if (queryMode != null && queryMode.equalsIgnoreCase("FIELD"))
         {
             this.queryMode = MODE_FIELD;
         }
+
+        // TODO Parse persistence.xml and extract names of classes that are persistable
+//        pe.getElementUtils().getTypeElement(fullyQualifiedClassName);
     }
 
     /* (non-Javadoc)
@@ -137,13 +144,19 @@ public class JDOQueryProcessor extends AbstractProcessor
         return false;
     }
 
+    @Override
+    public SourceVersion getSupportedSourceVersion() 
+    {
+        return SourceVersion.latest();
+    }
+
     /**
      * Handler for processing a JDO annotated class to create the criteria class stub.
      * @param el The class element
      */
     protected void processClass(TypeElement el)
     {
-        if (el == null || !isJDOAnnotated(el))
+        if (el == null || !isPersistableType(el))
         {
             return;
         }
@@ -154,7 +167,7 @@ public class JDOQueryProcessor extends AbstractProcessor
         String className = elementUtils.getBinaryName(el).toString();
         String pkgName = className.substring(0, className.lastIndexOf('.'));
         String classSimpleName = className.substring(className.lastIndexOf('.') + 1);
-        String classSimpleNameNew = JDOTypesafeQuery.getQueryClassNameForClassName(classSimpleName);
+        String classSimpleNameNew = getQueryClassNameForClassName(classSimpleName);
         String classNameNew = pkgName + "." + classSimpleNameNew;
         System.out.println("DataNucleus : JDO Query - " + className + " -> " + classNameNew);
 
@@ -185,7 +198,7 @@ public class JDOQueryProcessor extends AbstractProcessor
                     // "public class QASub extends QA"
                     String superClassName = elementUtils.getBinaryName(superEl).toString();
                     w.append(" extends ").append(superClassName.substring(0, superClassName.lastIndexOf('.')+1));
-                    w.append(JDOTypesafeQuery.getQueryClassNameForClassName(superClassName.substring(superClassName.lastIndexOf('.')+1)));
+                    w.append(getQueryClassNameForClassName(superClassName.substring(superClassName.lastIndexOf('.')+1)));
                 }
                 else
                 {
@@ -466,8 +479,7 @@ public class JDOQueryProcessor extends AbstractProcessor
             return TimeExpression.class.getSimpleName();
         }
 
-        String typeName =
-            AnnotationProcessorUtils.getDeclaredTypeName(processingEnv, type, true);
+        String typeName = AnnotationProcessorUtils.getDeclaredTypeName(processingEnv, type, true);
         TypeCategory cat = AnnotationProcessorUtils.getTypeCategoryForTypeMirror(typeName);
         if (cat == TypeCategory.MAP)
         {
@@ -484,11 +496,10 @@ public class JDOQueryProcessor extends AbstractProcessor
         else
         {
             TypeElement typeElement = (TypeElement) processingEnv.getTypeUtils().asElement(type);
-            if (typeElement != null && isJDOAnnotated(typeElement))
+            if (typeElement != null && isPersistableType(typeElement))
             {
                 // Persistent field ("mydomain.Xxx" becomes "mydomain.QXxx")
-                return typeName.substring(0, typeName.lastIndexOf('.')+1) + 
-                    JDOTypesafeQuery.getQueryClassNameForClassName(typeName.substring(typeName.lastIndexOf('.')+1));
+                return typeName.substring(0, typeName.lastIndexOf('.')+1) + getQueryClassNameForClassName(typeName.substring(typeName.lastIndexOf('.')+1));
             }
             else
             {
@@ -553,8 +564,7 @@ public class JDOQueryProcessor extends AbstractProcessor
             return TimeExpressionImpl.class.getSimpleName();
         }
 
-        String typeName =
-            AnnotationProcessorUtils.getDeclaredTypeName(processingEnv, type, true);
+        String typeName = AnnotationProcessorUtils.getDeclaredTypeName(processingEnv, type, true);
         TypeCategory cat = AnnotationProcessorUtils.getTypeCategoryForTypeMirror(typeName);
         if (cat == TypeCategory.MAP)
         {
@@ -571,11 +581,10 @@ public class JDOQueryProcessor extends AbstractProcessor
         else
         {
             TypeElement typeElement = (TypeElement) processingEnv.getTypeUtils().asElement(type);
-            if (typeElement != null && isJDOAnnotated(typeElement))
+            if (typeElement != null && isPersistableType(typeElement))
             {
                 // Persistent field ("mydomain.Xxx" becomes "mydomain.QXxx")
-                return typeName.substring(0, typeName.lastIndexOf('.')+1) + 
-                    JDOTypesafeQuery.getQueryClassNameForClassName(typeName.substring(typeName.lastIndexOf('.')+1));
+                return typeName.substring(0, typeName.lastIndexOf('.')+1) + getQueryClassNameForClassName(typeName.substring(typeName.lastIndexOf('.')+1));
             }
             else
             {
@@ -592,10 +601,24 @@ public class JDOQueryProcessor extends AbstractProcessor
     private boolean isPersistableType(TypeMirror type)
     {
         TypeElement typeElement = (TypeElement) processingEnv.getTypeUtils().asElement(type);
-        if (typeElement != null && isJDOAnnotated(typeElement))
+        if (typeElement != null && isPersistableType(typeElement))
         {
             return true;
         }
+        return false;
+    }
+
+    public boolean isPersistableType(TypeElement el)
+    {
+        if (el == null)
+        {
+            return false;
+        }
+        if ((el.getAnnotation(PersistenceCapable.class) != null))
+        {
+            return true;
+        }
+        // TODO Also allow for types that are specified as persistable in XML
         return false;
     }
 
@@ -604,7 +627,7 @@ public class JDOQueryProcessor extends AbstractProcessor
      * @param el The class (TypeElement)
      * @return The members that are persistable (Element)
      */
-    private List<? extends Element> getPersistentMembers(TypeElement el)
+    private static List<? extends Element> getPersistentMembers(TypeElement el)
     {
         List<? extends Element> members = AnnotationProcessorUtils.getFieldMembers(el); // All fields needed
         if (members != null)
@@ -653,7 +676,7 @@ public class JDOQueryProcessor extends AbstractProcessor
         }
 
         TypeElement superElement = (TypeElement) processingEnv.getTypeUtils().asElement(superType);
-        if (superElement == null || isJDOAnnotated(superElement))
+        if (superElement == null || isPersistableType(superElement))
         {
             return superElement;
         }
@@ -661,22 +684,13 @@ public class JDOQueryProcessor extends AbstractProcessor
     }
 
     /**
-     * Convenience method to return if this class element has any of the defining JDO annotations.
-     * @param el The class element
-     * @return Whether it is to be considered a JDO annotated class
+     * Method to return the (simple) name of the query class for a specified class name.
+     * Currently just returns "Q{className}"
+     * @param name Simple name of the class (without package)
+     * @return Simple name of the query class
      */
-    public static boolean isJDOAnnotated(TypeElement el)
+    public static String getQueryClassNameForClassName(String name)
     {
-        if ((el.getAnnotation(PersistenceCapable.class) != null))
-        {
-            return true;
-        }
-        return false;
-    }
-
-    @Override
-    public SourceVersion getSupportedSourceVersion() 
-    {
-        return SourceVersion.latest();
+        return TypesafeQuery.QUERY_CLASS_PREFIX + name;
     }
 }
