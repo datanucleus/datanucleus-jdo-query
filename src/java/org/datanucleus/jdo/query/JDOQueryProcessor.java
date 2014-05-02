@@ -42,24 +42,9 @@ import javax.lang.model.util.Elements;
 import javax.tools.Diagnostic.Kind;
 import javax.tools.JavaFileObject;
 
-// TODO Drop these references
-import org.datanucleus.api.jdo.query.BooleanExpressionImpl;
-import org.datanucleus.api.jdo.query.ByteExpressionImpl;
-import org.datanucleus.api.jdo.query.CharacterExpressionImpl;
-import org.datanucleus.api.jdo.query.CollectionExpressionImpl;
-import org.datanucleus.api.jdo.query.DateExpressionImpl;
-import org.datanucleus.api.jdo.query.DateTimeExpressionImpl;
-import org.datanucleus.api.jdo.query.ExpressionType;
-import org.datanucleus.api.jdo.query.ListExpressionImpl;
-import org.datanucleus.api.jdo.query.MapExpressionImpl;
-import org.datanucleus.api.jdo.query.NumericExpressionImpl;
-import org.datanucleus.api.jdo.query.ObjectExpressionImpl;
-import org.datanucleus.api.jdo.query.PersistableExpressionImpl;
-import org.datanucleus.api.jdo.query.StringExpressionImpl;
-import org.datanucleus.api.jdo.query.TimeExpressionImpl;
-
 import org.datanucleus.jdo.query.AnnotationProcessorUtils.TypeCategory;
 
+// TODO Change these to javax.jdo when they become part of JDO (4)
 import org.datanucleus.query.typesafe.BooleanExpression;
 import org.datanucleus.query.typesafe.ByteExpression;
 import org.datanucleus.query.typesafe.CharacterExpression;
@@ -186,8 +171,8 @@ public class JDOQueryProcessor extends AbstractProcessor
                 String typesafeCls = PersistableExpression.class.getName();
                 String typesafePkg = typesafeCls.substring(0, typesafeCls.lastIndexOf('.'));
                 w.append("import " + typesafePkg + ".*;\n");
-                String typesafeImplCls = PersistableExpressionImpl.class.getName();
-                String typesafeImplPkg = typesafeImplCls.substring(0, typesafeImplCls.lastIndexOf('.'));
+
+                String typesafeImplPkg = "org.datanucleus.api.jdo.query";
                 w.append("import " + typesafeImplPkg + ".*;\n");
                 w.append("\n");
 
@@ -203,7 +188,7 @@ public class JDOQueryProcessor extends AbstractProcessor
                 else
                 {
                     // "public class QA extends PersistableExpressionImpl<A> implements PersistableExpression<A>"
-                    w.append(" extends ").append(PersistableExpressionImpl.class.getName());
+                    w.append(" extends ").append("PersistableExpressionImpl");
                     w.append("<" + classSimpleName + ">");
                     w.append(" implements ").append(PersistableExpression.class.getSimpleName() + "<" + classSimpleName + ">");
                 }
@@ -338,7 +323,7 @@ public class JDOQueryProcessor extends AbstractProcessor
 
                 // ========== Constructor(Class type, String name, ExpressionType exprType) ==========
                 w.append(indent).append("public " + classSimpleNameNew).append("(");
-                w.append(Class.class.getSimpleName() + " type, String name, " + ExpressionType.class.getName() + " exprType)\n");
+                w.append(Class.class.getSimpleName() + " type, String name, ExpressionType exprType)\n");
                 w.append(indent).append("{\n");
                 w.append(indent).append("    super(type, name, exprType);\n");
                 if (queryMode == MODE_FIELD && members != null)
@@ -517,66 +502,66 @@ public class JDOQueryProcessor extends AbstractProcessor
     {
         if (type.getKind() == TypeKind.BOOLEAN)
         {
-            return BooleanExpressionImpl.class.getSimpleName();
+            return "BooleanExpressionImpl";
         }
         else if (type.getKind() == TypeKind.BYTE)
         {
-            return ByteExpressionImpl.class.getSimpleName();
+            return "ByteExpressionImpl";
         }
         else if (type.getKind() == TypeKind.CHAR)
         {
-            return CharacterExpressionImpl.class.getSimpleName();
+            return "CharacterExpressionImpl";
         }
         else if (type.getKind() == TypeKind.DOUBLE)
         {
-            return NumericExpressionImpl.class.getSimpleName() + "<Double>";
+            return "NumericExpressionImpl<Double>";
         }
         else if (type.getKind() == TypeKind.FLOAT)
         {
-            return NumericExpressionImpl.class.getSimpleName() + "<Float>";
+            return "NumericExpressionImpl<Float>";
         }
         else if (type.getKind() == TypeKind.INT)
         {
-            return NumericExpressionImpl.class.getSimpleName() + "<Integer>";
+            return "NumericExpressionImpl<Integer>";
         }
         else if (type.getKind() == TypeKind.LONG)
         {
-            return NumericExpressionImpl.class.getSimpleName() + "<Long>";
+            return "NumericExpressionImpl<Long>";
         }
         else if (type.getKind() == TypeKind.SHORT)
         {
-            return NumericExpressionImpl.class.getSimpleName() + "<Short>";
+            return "NumericExpressionImpl<Short>";
         }
         else if (type.toString().equals(String.class.getName()))
         {
-            return StringExpressionImpl.class.getSimpleName();
+            return "StringExpressionImpl";
         }
         else if (type.toString().equals(Date.class.getName()))
         {
-            return DateTimeExpressionImpl.class.getSimpleName();
+            return "DateTimeExpressionImpl";
         }
         else if (type.toString().equals(java.sql.Date.class.getName()))
         {
-            return DateExpressionImpl.class.getSimpleName();
+            return "DateExpressionImpl";
         }
         else if (type.toString().equals(java.sql.Time.class.getName()))
         {
-            return TimeExpressionImpl.class.getSimpleName();
+            return "TimeExpressionImpl";
         }
 
         String typeName = AnnotationProcessorUtils.getDeclaredTypeName(processingEnv, type, true);
         TypeCategory cat = AnnotationProcessorUtils.getTypeCategoryForTypeMirror(typeName);
         if (cat == TypeCategory.MAP)
         {
-            return MapExpressionImpl.class.getSimpleName();
+            return "MapExpressionImpl";
         }
         else if (cat == TypeCategory.LIST)
         {
-            return ListExpressionImpl.class.getSimpleName();
+            return "ListExpressionImpl";
         }
         else if (cat == TypeCategory.COLLECTION || cat == TypeCategory.SET)
         {
-            return CollectionExpressionImpl.class.getSimpleName();
+            return "CollectionExpressionImpl";
         }
         else
         {
@@ -588,7 +573,7 @@ public class JDOQueryProcessor extends AbstractProcessor
             }
             else
             {
-                return ObjectExpressionImpl.class.getSimpleName() + "<" + type.toString() + ">";
+                return "ObjectExpressionImpl<" + type.toString() + ">";
             }
         }
     }
