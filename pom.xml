@@ -9,7 +9,7 @@
     </parent>
 
     <artifactId>datanucleus-jdo-query</artifactId>
-    <version>4.0.5-SNAPSHOT</version>
+    <version>4.2.0-m1-SNAPSHOT</version>
 
     <name>DataNucleus JDO Query</name>
     <description>
@@ -17,8 +17,8 @@
     </description>
 
     <properties>
-        <jdo.version>3.0</jdo.version>
-        <dn.api.jdo.version>4.0.0-m4</dn.api.jdo.version>
+        <jdo.version>3.2.0-m1-SNAPSHOT</jdo.version>
+        <dn.api.jdo.version>4.2.0-m1-SNAPSHOT</dn.api.jdo.version>
     </properties>
 
     <scm>
@@ -35,8 +35,10 @@
             <scope>provided</scope>
         </dependency>
         <dependency>
-            <groupId>javax.jdo</groupId>
-            <artifactId>jdo-api</artifactId>
+            <!--groupId>javax.jdo</groupId>
+            <artifactId>jdo-api</artifactId-->
+            <groupId>org.datanucleus</groupId>
+            <artifactId>javax.jdo</artifactId>
             <version>[${jdo.version}, )</version>
             <scope>provided</scope>
         </dependency>
