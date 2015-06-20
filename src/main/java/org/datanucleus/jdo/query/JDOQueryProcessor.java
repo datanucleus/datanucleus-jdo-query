@@ -44,25 +44,24 @@ import javax.tools.JavaFileObject;
 
 import org.datanucleus.jdo.query.AnnotationProcessorUtils.TypeCategory;
 
-// TODO Change these to javax.jdo when they become part of JDO (4)
-import org.datanucleus.query.typesafe.BooleanExpression;
-import org.datanucleus.query.typesafe.ByteExpression;
-import org.datanucleus.query.typesafe.CharacterExpression;
-import org.datanucleus.query.typesafe.CollectionExpression;
-import org.datanucleus.query.typesafe.DateExpression;
-import org.datanucleus.query.typesafe.DateTimeExpression;
-import org.datanucleus.query.typesafe.ListExpression;
-import org.datanucleus.query.typesafe.MapExpression;
-import org.datanucleus.query.typesafe.NumericExpression;
-import org.datanucleus.query.typesafe.ObjectExpression;
-import org.datanucleus.query.typesafe.PersistableExpression;
-import org.datanucleus.query.typesafe.StringExpression;
-import org.datanucleus.query.typesafe.TimeExpression;
-import org.datanucleus.query.typesafe.TypesafeQuery;
+import javax.jdo.query.BooleanExpression;
+import javax.jdo.query.ByteExpression;
+import javax.jdo.query.CharacterExpression;
+import javax.jdo.query.CollectionExpression;
+import javax.jdo.query.DateExpression;
+import javax.jdo.query.DateTimeExpression;
+import javax.jdo.query.ListExpression;
+import javax.jdo.query.MapExpression;
+import javax.jdo.query.NumericExpression;
+import javax.jdo.query.ObjectExpression;
+import javax.jdo.query.PersistableExpression;
+import javax.jdo.query.StringExpression;
+import javax.jdo.query.TimeExpression;
+import javax.jdo.JDOQLTypedQuery;
 
 /**
  * Annotation processor for JDO to generate "dummy" classes for all persistable classes for use with the 
- * Typesafe Query API. Any class ({MyClass}) that has a JDO "class" annotation will have a stub class (Q{MyClass}) generated.
+ * JDOQLTypedQuery API. Any class ({MyClass}) that has a JDO "class" annotation will have a stub class (Q{MyClass}) generated.
  * <ul>
  * <li>For each managed class X in package p, a metamodel class QX in package p is created.</li>
  * <li>The name of the metamodel class is derived from the name of the managed class by prepending "Q" 
@@ -676,6 +675,6 @@ public class JDOQueryProcessor extends AbstractProcessor
      */
     public static String getQueryClassNameForClassName(String name)
     {
-        return TypesafeQuery.QUERY_CLASS_PREFIX + name;
+        return JDOQLTypedQuery.QUERY_CLASS_PREFIX + name;
     }
 }
