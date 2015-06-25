@@ -19,6 +19,8 @@ package org.datanucleus.jdo.query;
 
 import java.io.IOException;
 import java.io.Writer;
+import java.math.BigDecimal;
+import java.math.BigInteger;
 import java.util.Date;
 import java.util.Iterator;
 import java.util.List;
@@ -93,7 +95,7 @@ public class JDOQueryProcessor extends AbstractProcessor
     {
         super.init(pe);
 
-        pe.getMessager().printMessage(Kind.NOTE, "DataNucleus JDO AnnotationProcessor for generating Typesafe classes");// TODO Where does this go?
+        pe.getMessager().printMessage(Kind.NOTE, "DataNucleus JDO AnnotationProcessor for generating JDOQL Typed query classes");// TODO Where does this go?
 
         // Get the query mode
         String queryMode = pe.getOptions().get(OPTION_MODE);
@@ -445,6 +447,14 @@ public class JDOQueryProcessor extends AbstractProcessor
         else if (type.getKind() == TypeKind.SHORT)
         {
             return NumericExpression.class.getSimpleName() + "<Short>";
+        }
+        else if (type.toString().equals(BigInteger.class.getName()))
+        {
+            return NumericExpression.class.getSimpleName() + "<java.math.BigInteger>";
+        }
+        else if (type.toString().equals(BigDecimal.class.getName()))
+        {
+            return NumericExpression.class.getSimpleName() + "<java.math.BigDecimal>";
         }
         else if (type.toString().equals(String.class.getName()))
         {
