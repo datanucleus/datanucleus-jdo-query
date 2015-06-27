@@ -541,6 +541,14 @@ public class JDOQueryProcessor extends AbstractProcessor
         {
             return "NumericExpressionImpl<Short>";
         }
+        else if (type.toString().equals(BigInteger.class.getName()))
+        {
+            return "NumericExpressionImpl<java.math.BigInteger>";
+        }
+        else if (type.toString().equals(BigDecimal.class.getName()))
+        {
+            return "NumericExpressionImpl<java.math.BigDecimal>";
+        }
         else if (type.toString().equals(String.class.getName()))
         {
             return "StringExpressionImpl";
