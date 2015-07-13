@@ -17,7 +17,7 @@
     </description>
 
     <properties>
-        <jdo.version>3.2.0-m1-SNAPSHOT</jdo.version>
+        <jdo.version>3.2.0-m1</jdo.version>
         <dn.api.jdo.version>4.2.0-m1-SNAPSHOT</dn.api.jdo.version>
     </properties>
 
