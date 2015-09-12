@@ -472,6 +472,19 @@ public class JDOQueryProcessor extends AbstractProcessor
         {
             return TimeExpression.class.getSimpleName();
         }
+        // TODO Update package when we merge Java8 into core/api.jdo
+        else if (type.toString().equals("java.time.LocalDate"))
+        {
+            return "org.datanucleus.store.types.java8.jdo.query.LocalDateExpression";
+        }
+        else if (type.toString().equals("java.time.LocalTime"))
+        {
+            return "org.datanucleus.store.types.java8.jdo.query.LocalTimeExpression";
+        }
+        else if (type.toString().equals("java.time.LocalDateTime"))
+        {
+            return "org.datanucleus.store.types.java8.jdo.query.LocalDateTimeExpression";
+        }
 
         String typeName = AnnotationProcessorUtils.getDeclaredTypeName(processingEnv, type, true);
         TypeCategory cat = AnnotationProcessorUtils.getTypeCategoryForTypeMirror(typeName);
@@ -564,6 +577,19 @@ public class JDOQueryProcessor extends AbstractProcessor
         else if (type.toString().equals(java.sql.Time.class.getName()))
         {
             return "TimeExpressionImpl";
+        }
+        // TODO Update package when we merge Java8 into core/api.jdo
+        else if (type.toString().equals("java.time.LocalDate"))
+        {
+            return "org.datanucleus.store.types.java8.jdo.query.LocalDateExpressionImpl";
+        }
+        else if (type.toString().equals("java.time.LocalTime"))
+        {
+            return "org.datanucleus.store.types.java8.jdo.query.LocalTimeExpressionImpl";
+        }
+        else if (type.toString().equals("java.time.LocalDateTime"))
+        {
+            return "org.datanucleus.store.types.java8.jdo.query.LocalDateTimeExpressionImpl";
         }
 
         String typeName = AnnotationProcessorUtils.getDeclaredTypeName(processingEnv, type, true);
