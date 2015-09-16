@@ -296,8 +296,9 @@ public class JDOQueryProcessor extends AbstractProcessor
                                 String qinnerclassNameSimpleShort = getQueryClassNameForClassName(innerclassNameSimpleShort);
                                 String qinnerclassNameFull = pkgName + "." + qclassNameSimple + "$" + qinnerclassNameSimpleShort;
                                 System.out.println("DataNucleus : JDOQLTypedQuery Q class generation : " + innerclassNameFull + " -> " + qinnerclassNameFull);
+
                                 // Class declaration
-                                w.append(indent).append("public class " + qinnerclassNameSimpleShort);
+                                w.append(indent).append("public static class " + qinnerclassNameSimpleShort);
                                 TypeElement innerSuperEl = getPersistentSupertype(encEl);
                                 if (innerSuperEl != null)
                                 {
@@ -314,6 +315,10 @@ public class JDOQueryProcessor extends AbstractProcessor
                                 }
                                 w.append("\n");
                                 w.append(indent).append("{\n");
+
+                                // Add static accessor for the candidate of this type
+                                addStaticMethodAccessors(w, indentInner, qinnerclassNameSimpleShort, innerclassNameSimpleShort);
+                                w.append("\n");
 
                                 // Add fields for persistable members
                                 List<? extends Element> innerMembers = getPersistentMembers(encEl);
