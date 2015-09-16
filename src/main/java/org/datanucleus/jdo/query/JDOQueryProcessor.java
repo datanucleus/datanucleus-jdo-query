@@ -147,9 +147,10 @@ public class JDOQueryProcessor extends AbstractProcessor
             return;
         }
 
+        Elements elementUtils = processingEnv.getElementUtils();
+
         // TODO Support specification of the location for writing the class source files
         // TODO Set references to other classes to be the class name and put the package in the imports
-        Elements elementUtils = processingEnv.getElementUtils();
         String className = elementUtils.getBinaryName(el).toString();
         String pkgName = className.substring(0, className.lastIndexOf('.'));
         String classSimpleName = className.substring(className.lastIndexOf('.') + 1);
@@ -397,6 +398,23 @@ public class JDOQueryProcessor extends AbstractProcessor
 
                 w.append("}\n");
                 w.flush();
+
+                List<? extends Element> encElems = el.getEnclosedElements();
+                if (encElems != null)
+                {
+                    for (Element encE : encElems)
+                    {
+                        if (encE instanceof TypeElement)
+                        {
+                            TypeElement encEl = (TypeElement)encE;
+                            if (isPersistableType(encEl))
+                            {
+                                // TODO Support static inner persistable classes
+                                System.out.println("Persistable (static) inner class " + elementUtils.getBinaryName(encEl).toString() + " is not being processed. Not supported currently. Put this in its own file");
+                            }
+                        }
+                    }
+                }
             }
             finally
             {
