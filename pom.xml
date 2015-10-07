@@ -13,12 +13,12 @@
 
     <name>DataNucleus JDO Query</name>
     <description>
-        Plugin for DataNucleus providing annotation processing for JDOQL typesafe queries
+        Plugin for DataNucleus providing annotation processing for JDOQLTypedQuery 'Q' class generation.
     </description>
 
     <properties>
-        <jdo.version>3.2.0-m1</jdo.version>
-        <dn.api.jdo.version>4.2.0-m1</dn.api.jdo.version>
+        <jdo.version>3.2.0-m3</jdo.version>
+        <dn.api.jdo.version>4.2.0-m3</dn.api.jdo.version>
     </properties>
 
     <scm>
