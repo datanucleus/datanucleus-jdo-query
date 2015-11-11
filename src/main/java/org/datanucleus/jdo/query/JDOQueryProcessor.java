@@ -289,7 +289,7 @@ public class JDOQueryProcessor extends AbstractProcessor
                             (member.getKind() == ElementKind.METHOD && AnnotationProcessorUtils.isJavaBeanGetter((ExecutableElement) member)))
                         {
                             w.append("\n");
-                            addPropertyAccessorMethod(w, indent, member, classNameFull);
+                            addPropertyAccessorMethod(w, indent, member, classNameFull, genericLookups);
                         }
                     }
                 }
@@ -352,6 +352,10 @@ public class JDOQueryProcessor extends AbstractProcessor
                                             (member.getKind() == ElementKind.METHOD && AnnotationProcessorUtils.isJavaBeanGetter((ExecutableElement) member)))
                                         {
                                             TypeMirror type = AnnotationProcessorUtils.getDeclaredType(member);
+                                            if (type instanceof TypeVariable && genericLookups != null && genericLookups.containsKey(type.toString()))
+                                            {
+                                                type = genericLookups.get(type.toString());
+                                            }
                                             String memberName = AnnotationProcessorUtils.getMemberName(member);
                                             String intfName = getExpressionInterfaceNameForType(type);
 
@@ -386,7 +390,7 @@ public class JDOQueryProcessor extends AbstractProcessor
                                             (member.getKind() == ElementKind.METHOD && AnnotationProcessorUtils.isJavaBeanGetter((ExecutableElement) member)))
                                         {
                                             w.append("\n");
-                                            addPropertyAccessorMethod(w, indentInner, member, classNameFull);
+                                            addPropertyAccessorMethod(w, indentInner, member, classNameFull, genericLookups);
                                         }
                                     }
                                 }
@@ -588,7 +592,7 @@ public class JDOQueryProcessor extends AbstractProcessor
         w.append(indent).append("}\n");
     }
 
-    protected void addPropertyAccessorMethod(Writer w, String indent, Element member, String classNameFull)
+    protected void addPropertyAccessorMethod(Writer w, String indent, Element member, String classNameFull, Map<String, TypeMirror> genericLookups)
     throws IOException
     {
         // public {type} {memberName}()
@@ -600,6 +604,10 @@ public class JDOQueryProcessor extends AbstractProcessor
         //     return this.memberVar;
         // }
         TypeMirror type = AnnotationProcessorUtils.getDeclaredType(member);
+        if (type instanceof TypeVariable && genericLookups != null && genericLookups.containsKey(type.toString()))
+        {
+            type = genericLookups.get(type.toString());
+        }
         String memberName = AnnotationProcessorUtils.getMemberName(member);
         String implClassName = getExpressionImplClassNameForType(type);
         if (implClassName.startsWith(classNameFull + "."))
