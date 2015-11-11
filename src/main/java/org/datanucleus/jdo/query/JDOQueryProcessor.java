@@ -22,8 +22,10 @@ import java.io.Writer;
 import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 import javax.annotation.processing.AbstractProcessor;
@@ -38,8 +40,10 @@ import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.TypeElement;
+import javax.lang.model.element.TypeParameterElement;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
+import javax.lang.model.type.TypeVariable;
 import javax.lang.model.util.Elements;
 import javax.tools.Diagnostic.Kind;
 import javax.tools.JavaFileObject;
@@ -160,6 +164,18 @@ public class JDOQueryProcessor extends AbstractProcessor
         String qclassNameFull = pkgName + "." + qclassNameSimple;
         System.out.println("DataNucleus : JDOQLTypedQuery Q class generation : " + classNameFull + " -> " + qclassNameFull);
 
+        Map<String, TypeMirror> genericLookups = null;
+        List<? extends TypeParameterElement> elTypeParams = el.getTypeParameters();
+        for (TypeParameterElement elTypeParam : elTypeParams)
+        {
+            List<? extends TypeMirror> elTypeBounds = elTypeParam.getBounds();
+            if (elTypeBounds != null && !elTypeBounds.isEmpty())
+            {
+                genericLookups = new HashMap<String, TypeMirror>();
+                genericLookups.put(elTypeParam.toString(), elTypeBounds.get(0));
+            }
+        }
+
         try
         {
             JavaFileObject javaFile = processingEnv.getFiler().createSourceFile(qclassNameFull);
@@ -228,6 +244,10 @@ public class JDOQueryProcessor extends AbstractProcessor
                             (member.getKind() == ElementKind.METHOD && AnnotationProcessorUtils.isJavaBeanGetter((ExecutableElement) member)))
                         {
                             TypeMirror type = AnnotationProcessorUtils.getDeclaredType(member);
+                            if (type instanceof TypeVariable && genericLookups != null && genericLookups.containsKey(type.toString()))
+                            {
+                                type = genericLookups.get(type.toString());
+                            }
                             String memberName = AnnotationProcessorUtils.getMemberName(member);
                             String intfName = getExpressionInterfaceNameForType(type);
 
@@ -252,11 +272,11 @@ public class JDOQueryProcessor extends AbstractProcessor
 
                 // ========== Constructor(PersistableExpression parent, String name, int depth) ==========
                 w.append("\n");
-                addConstructorWithPersistableExpression(w, indent, qclassNameSimple, superEl, members, classNameFull);
+                addConstructorWithPersistableExpression(w, indent, qclassNameSimple, superEl, members, classNameFull, genericLookups);
 
                 // ========== Constructor(Class type, String name, ExpressionType exprType) ==========
                 w.append("\n");
-                addConstructorWithType(w, indent, qclassNameSimple, members, classNameFull);
+                addConstructorWithType(w, indent, qclassNameSimple, members, classNameFull, genericLookups);
 
                 // Property accessors
                 if (queryMode == MODE_PROPERTY && members != null)
@@ -349,11 +369,11 @@ public class JDOQueryProcessor extends AbstractProcessor
 
                                 // ========== Constructor(PersistableExpression parent, String name, int depth) ==========
                                 w.append("\n");
-                                addConstructorWithPersistableExpression(w, indentInner, qinnerclassNameSimpleShort, innerSuperEl, innerMembers, classNameFull);
+                                addConstructorWithPersistableExpression(w, indentInner, qinnerclassNameSimpleShort, innerSuperEl, innerMembers, classNameFull, genericLookups);
 
                                 // ========== Constructor(Class type, String name, ExpressionType exprType) ==========
                                 w.append("\n");
-                                addConstructorWithType(w, indentInner, qinnerclassNameSimpleShort, innerMembers, classNameFull);
+                                addConstructorWithType(w, indentInner, qinnerclassNameSimpleShort, innerMembers, classNameFull, genericLookups);
 
                                 // Property accessors
                                 if (queryMode == MODE_PROPERTY && members != null)
@@ -439,11 +459,13 @@ public class JDOQueryProcessor extends AbstractProcessor
      * @param w The writer
      * @param indent Indent to apply to the code
      * @param qclassNameSimple Simple name of the QClass that this is constructing
-     * @param superEl Any superelement
+     * @param superEl Any super element
      * @param members Members for this QClass that need initialising
+     * @param genericLookups Lookup for TypeVariables
      * @throws IOException Thrown if an error occurs on writing this code
      */
-    protected void addConstructorWithPersistableExpression(Writer w, String indent, String qclassNameSimple, TypeElement superEl, List<? extends Element> members, String classNameFull)
+    protected void addConstructorWithPersistableExpression(Writer w, String indent, String qclassNameSimple, TypeElement superEl, List<? extends Element> members, String classNameFull,
+            Map<String, TypeMirror> genericLookups)
     throws IOException
     {
         w.append(indent).append("public " + qclassNameSimple).append("(").append(PersistableExpression.class.getSimpleName() + " parent, String name, int depth)\n");
@@ -467,6 +489,10 @@ public class JDOQueryProcessor extends AbstractProcessor
                     (member.getKind() == ElementKind.METHOD && AnnotationProcessorUtils.isJavaBeanGetter((ExecutableElement) member)))
                 {
                     TypeMirror type = AnnotationProcessorUtils.getDeclaredType(member);
+                    if (type instanceof TypeVariable && genericLookups != null && genericLookups.containsKey(type.toString()))
+                    {
+                        type = genericLookups.get(type.toString());
+                    }
                     String memberName = AnnotationProcessorUtils.getMemberName(member);
                     String implClassName = getExpressionImplClassNameForType(type);
                     if (implClassName.startsWith(classNameFull + "."))
@@ -512,9 +538,11 @@ public class JDOQueryProcessor extends AbstractProcessor
      * @param indent Indent to apply to the code
      * @param qclassNameSimple Simple name of the QClass that this is constructing
      * @param members Members for this QClass that need initialising
+     * @param genericLookups Lookup for TypeVariables
      * @throws IOException Thrown if an error occurs on writing this code
      */
-    protected void addConstructorWithType(Writer w, String indent, String qclassNameSimple, List<? extends Element> members, String classNameFull)
+    protected void addConstructorWithType(Writer w, String indent, String qclassNameSimple, List<? extends Element> members, String classNameFull,
+            Map<String, TypeMirror> genericLookups)
     throws IOException
     {
         w.append(indent).append("public " + qclassNameSimple).append("(").append(Class.class.getSimpleName() + " type, String name, ExpressionType exprType)\n");
@@ -531,6 +559,10 @@ public class JDOQueryProcessor extends AbstractProcessor
                     (member.getKind() == ElementKind.METHOD && AnnotationProcessorUtils.isJavaBeanGetter((ExecutableElement) member)))
                 {
                     TypeMirror type = AnnotationProcessorUtils.getDeclaredType(member);
+                    if (type instanceof TypeVariable && genericLookups != null && genericLookups.containsKey(type.toString()))
+                    {
+                        type = genericLookups.get(type.toString());
+                    }
                     String memberName = AnnotationProcessorUtils.getMemberName(member);
                     String implClassName = getExpressionImplClassNameForType(type);
                     if (implClassName.startsWith(classNameFull + "."))
