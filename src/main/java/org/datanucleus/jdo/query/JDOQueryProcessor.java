@@ -20,8 +20,10 @@ package org.datanucleus.jdo.query;
 import java.io.IOException;
 import java.io.Writer;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 import javax.annotation.processing.AbstractProcessor;
@@ -36,15 +38,16 @@ import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.TypeElement;
+import javax.lang.model.element.TypeParameterElement;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
+import javax.lang.model.type.TypeVariable;
 import javax.lang.model.util.Elements;
 import javax.tools.Diagnostic.Kind;
 import javax.tools.JavaFileObject;
 
 import org.datanucleus.jdo.query.AnnotationProcessorUtils.TypeCategory;
 
-// TODO Change these to javax.jdo when they become part of JDO (4)
 import org.datanucleus.query.typesafe.BooleanExpression;
 import org.datanucleus.query.typesafe.ByteExpression;
 import org.datanucleus.query.typesafe.CharacterExpression;
@@ -156,6 +159,18 @@ public class JDOQueryProcessor extends AbstractProcessor
         String classNameNew = pkgName + "." + classSimpleNameNew;
         System.out.println("DataNucleus : JDO Query - " + className + " -> " + classNameNew);
 
+        Map<String, TypeMirror> genericLookups = null;
+        List<? extends TypeParameterElement> elTypeParams = el.getTypeParameters();
+        for (TypeParameterElement elTypeParam : elTypeParams)
+        {
+            List<? extends TypeMirror> elTypeBounds = elTypeParam.getBounds();
+            if (elTypeBounds != null && !elTypeBounds.isEmpty())
+            {
+                genericLookups = new HashMap<String, TypeMirror>();
+                genericLookups.put(elTypeParam.toString(), elTypeBounds.get(0));
+            }
+        }
+
         TypeElement superEl = getPersistentSupertype(el);
         try
         {
@@ -245,6 +260,10 @@ public class JDOQueryProcessor extends AbstractProcessor
                             (member.getKind() == ElementKind.METHOD && AnnotationProcessorUtils.isJavaBeanGetter((ExecutableElement) member)))
                         {
                             TypeMirror type = AnnotationProcessorUtils.getDeclaredType(member);
+                            if (type instanceof TypeVariable && genericLookups != null && genericLookups.containsKey(type.toString()))
+                            {
+                                type = genericLookups.get(type.toString());
+                            }
                             String memberName = AnnotationProcessorUtils.getMemberName(member);
                             String intfName = getExpressionInterfaceNameForType(type);
 
@@ -286,6 +305,10 @@ public class JDOQueryProcessor extends AbstractProcessor
                             (member.getKind() == ElementKind.METHOD && AnnotationProcessorUtils.isJavaBeanGetter((ExecutableElement) member)))
                         {
                             TypeMirror type = AnnotationProcessorUtils.getDeclaredType(member);
+                            if (type instanceof TypeVariable && genericLookups != null && genericLookups.containsKey(type.toString()))
+                            {
+                                type = genericLookups.get(type.toString());
+                            }
                             String memberName = AnnotationProcessorUtils.getMemberName(member);
                             String implClassName = getExpressionImplClassNameForType(type);
                             if (isPersistableType(type))
@@ -337,6 +360,10 @@ public class JDOQueryProcessor extends AbstractProcessor
                             (member.getKind() == ElementKind.METHOD && AnnotationProcessorUtils.isJavaBeanGetter((ExecutableElement) member)))
                         {
                             TypeMirror type = AnnotationProcessorUtils.getDeclaredType(member);
+                            if (type instanceof TypeVariable && genericLookups != null && genericLookups.containsKey(type.toString()))
+                            {
+                                type = genericLookups.get(type.toString());
+                            }
                             String memberName = AnnotationProcessorUtils.getMemberName(member);
                             String implClassName = getExpressionImplClassNameForType(type);
                             if (isPersistableType(type))
@@ -375,6 +402,10 @@ public class JDOQueryProcessor extends AbstractProcessor
                             //     return this.memberVar;
                             // }
                             TypeMirror type = AnnotationProcessorUtils.getDeclaredType(member);
+                            if (type instanceof TypeVariable && genericLookups != null && genericLookups.containsKey(type.toString()))
+                            {
+                                type = genericLookups.get(type.toString());
+                            }
                             String memberName = AnnotationProcessorUtils.getMemberName(member);
                             String implClassName = getExpressionImplClassNameForType(type);
                             String intfName = getExpressionInterfaceNameForType(type);
