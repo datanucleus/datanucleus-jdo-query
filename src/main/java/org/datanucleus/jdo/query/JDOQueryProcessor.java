@@ -21,6 +21,9 @@ import java.io.IOException;
 import java.io.Writer;
 import java.math.BigDecimal;
 import java.math.BigInteger;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.LocalTime;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -48,6 +51,9 @@ import javax.lang.model.util.Elements;
 import javax.tools.Diagnostic.Kind;
 import javax.tools.JavaFileObject;
 
+import org.datanucleus.api.jdo.query.LocalDateExpression;
+import org.datanucleus.api.jdo.query.LocalDateTimeExpression;
+import org.datanucleus.api.jdo.query.LocalTimeExpression;
 import org.datanucleus.jdo.query.AnnotationProcessorUtils.TypeCategory;
 
 import javax.jdo.query.BooleanExpression;
@@ -691,17 +697,17 @@ public class JDOQueryProcessor extends AbstractProcessor
             return TimeExpression.class.getSimpleName();
         }
         // TODO Update package when we merge Java8 into core/api.jdo
-        else if (type.toString().equals("java.time.LocalDate"))
+        else if (type.toString().equals(LocalDate.class.getName()))
         {
-            return "org.datanucleus.store.types.java8.jdo.query.LocalDateExpression";
+            return LocalDateExpression.class.getSimpleName();
         }
-        else if (type.toString().equals("java.time.LocalTime"))
+        else if (type.toString().equals(LocalTime.class.getName()))
         {
-            return "org.datanucleus.store.types.java8.jdo.query.LocalTimeExpression";
+            return LocalTimeExpression.class.getSimpleName();
         }
-        else if (type.toString().equals("java.time.LocalDateTime"))
+        else if (type.toString().equals(LocalDateTime.class.getName()))
         {
-            return "org.datanucleus.store.types.java8.jdo.query.LocalDateTimeExpression";
+            return LocalDateTimeExpression.class.getSimpleName();
         }
 
         String typeName = AnnotationProcessorUtils.getDeclaredTypeName(processingEnv, type, true);
@@ -796,18 +802,17 @@ public class JDOQueryProcessor extends AbstractProcessor
         {
             return "TimeExpressionImpl";
         }
-        // TODO Update package when we merge Java8 into core/api.jdo
-        else if (type.toString().equals("java.time.LocalDate"))
+        else if (type.toString().equals(LocalDate.class.getName()))
         {
-            return "org.datanucleus.store.types.java8.jdo.query.LocalDateExpressionImpl";
+            return "LocalDateExpressionImpl";
         }
-        else if (type.toString().equals("java.time.LocalTime"))
+        else if (type.toString().equals(LocalTime.class.getName()))
         {
-            return "org.datanucleus.store.types.java8.jdo.query.LocalTimeExpressionImpl";
+            return "LocalTimeExpressionImpl";
         }
-        else if (type.toString().equals("java.time.LocalDateTime"))
+        else if (type.toString().equals(LocalDateTime.class.getName()))
         {
-            return "org.datanucleus.store.types.java8.jdo.query.LocalDateTimeExpressionImpl";
+            return "LocalDateTimeExpressionImpl";
         }
 
         String typeName = AnnotationProcessorUtils.getDeclaredTypeName(processingEnv, type, true);
