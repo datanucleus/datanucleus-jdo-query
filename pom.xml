@@ -31,7 +31,7 @@
         <dependency>
             <groupId>org.datanucleus</groupId>
             <artifactId>datanucleus-api-jdo</artifactId>
-            <version>[${dn.api.jdo.version}, )</version>
+            <version>[${dn.api.jdo.version}, 4.9)</version>
             <scope>provided</scope>
         </dependency>
         <dependency>
@@ -39,7 +39,7 @@
             <artifactId>jdo-api</artifactId-->
             <groupId>org.datanucleus</groupId>
             <artifactId>javax.jdo</artifactId>
-            <version>[${jdo.version}, )</version>
+            <version>${jdo.version}</version>
             <scope>provided</scope>
         </dependency>
     </dependencies>
