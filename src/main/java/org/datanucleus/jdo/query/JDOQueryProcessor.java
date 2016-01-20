@@ -51,9 +51,6 @@ import javax.lang.model.util.Elements;
 import javax.tools.Diagnostic.Kind;
 import javax.tools.JavaFileObject;
 
-import org.datanucleus.api.jdo.query.LocalDateExpression;
-import org.datanucleus.api.jdo.query.LocalDateTimeExpression;
-import org.datanucleus.api.jdo.query.LocalTimeExpression;
 import org.datanucleus.jdo.query.AnnotationProcessorUtils.TypeCategory;
 
 import javax.jdo.query.BooleanExpression;
@@ -63,6 +60,9 @@ import javax.jdo.query.CollectionExpression;
 import javax.jdo.query.DateExpression;
 import javax.jdo.query.DateTimeExpression;
 import javax.jdo.query.ListExpression;
+import javax.jdo.query.LocalDateExpression;
+import javax.jdo.query.LocalDateTimeExpression;
+import javax.jdo.query.LocalTimeExpression;
 import javax.jdo.query.MapExpression;
 import javax.jdo.query.NumericExpression;
 import javax.jdo.query.ObjectExpression;
@@ -696,7 +696,6 @@ public class JDOQueryProcessor extends AbstractProcessor
         {
             return TimeExpression.class.getSimpleName();
         }
-        // TODO Update package when we merge Java8 into core/api.jdo
         else if (type.toString().equals(LocalDate.class.getName()))
         {
             return LocalDateExpression.class.getSimpleName();
