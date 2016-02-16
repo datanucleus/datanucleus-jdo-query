@@ -471,6 +471,7 @@ public class JDOQueryProcessor extends AbstractProcessor
      * @param qclassNameSimple Simple name of the QClass that this is constructing
      * @param superEl Any super element
      * @param members Members for this QClass that need initialising
+     * @param classNameFull Fully qualified class name
      * @param genericLookups Lookup for TypeVariables
      * @throws IOException Thrown if an error occurs on writing this code
      */
@@ -548,6 +549,7 @@ public class JDOQueryProcessor extends AbstractProcessor
      * @param indent Indent to apply to the code
      * @param qclassNameSimple Simple name of the QClass that this is constructing
      * @param members Members for this QClass that need initialising
+     * @param classNameFull Fully qualified class name
      * @param genericLookups Lookup for TypeVariables
      * @throws IOException Thrown if an error occurs on writing this code
      */
