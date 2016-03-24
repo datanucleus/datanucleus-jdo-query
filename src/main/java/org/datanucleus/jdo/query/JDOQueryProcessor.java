@@ -66,6 +66,7 @@ import javax.jdo.query.LocalTimeExpression;
 import javax.jdo.query.MapExpression;
 import javax.jdo.query.NumericExpression;
 import javax.jdo.query.ObjectExpression;
+import javax.jdo.query.OptionalExpression;
 import javax.jdo.query.PersistableExpression;
 import javax.jdo.query.StringExpression;
 import javax.jdo.query.TimeExpression;
@@ -553,8 +554,7 @@ public class JDOQueryProcessor extends AbstractProcessor
      * @param genericLookups Lookup for TypeVariables
      * @throws IOException Thrown if an error occurs on writing this code
      */
-    protected void addConstructorWithType(Writer w, String indent, String qclassNameSimple, List<? extends Element> members, String classNameFull,
-            Map<String, TypeMirror> genericLookups)
+    protected void addConstructorWithType(Writer w, String indent, String qclassNameSimple, List<? extends Element> members, String classNameFull, Map<String, TypeMirror> genericLookups)
     throws IOException
     {
         w.append(indent).append("public " + qclassNameSimple).append("(").append(Class.class.getSimpleName() + " type, String name, ExpressionType exprType)\n");
@@ -710,6 +710,10 @@ public class JDOQueryProcessor extends AbstractProcessor
         {
             return LocalDateTimeExpression.class.getSimpleName();
         }
+        else if (type.toString().equals(java.util.Optional.class.getName()))
+        {
+            return OptionalExpression.class.getSimpleName();
+        }
 
         String typeName = AnnotationProcessorUtils.getDeclaredTypeName(processingEnv, type, true);
         TypeCategory cat = AnnotationProcessorUtils.getTypeCategoryForTypeMirror(typeName);
@@ -814,6 +818,10 @@ public class JDOQueryProcessor extends AbstractProcessor
         else if (type.toString().equals(LocalDateTime.class.getName()))
         {
             return "LocalDateTimeExpressionImpl";
+        }
+        else if (type.toString().equals(java.util.Optional.class.getName()))
+        {
+            return "OptionalExpressionImpl";
         }
 
         String typeName = AnnotationProcessorUtils.getDeclaredTypeName(processingEnv, type, true);
