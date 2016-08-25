@@ -67,7 +67,7 @@ public class AnnotationProcessorUtils
         MAP_CLASSNAMES.add("java.util.AbstractMap");
         MAP_CLASSNAMES.add("java.util.Hashtable");
         MAP_CLASSNAMES.add("java.util.LinkedHashMap");
-        SET_CLASSNAMES.add("java.util.TreeMap");
+        MAP_CLASSNAMES.add("java.util.TreeMap");
         MAP_CLASSNAMES.add("java.util.SortedMap");
         MAP_CLASSNAMES.add("java.util.Properties");
         COLLECTION_CLASSNAMES = new HashSet<String>();
