@@ -44,6 +44,7 @@ import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.TypeParameterElement;
+import javax.lang.model.type.DeclaredType;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
 import javax.lang.model.type.TypeVariable;
@@ -642,6 +643,13 @@ public class JDOQueryProcessor extends AbstractProcessor
      */
     private String getExpressionInterfaceNameForType(TypeMirror type)
     {
+        if (type.getKind() == TypeKind.DECLARED)
+        {
+            // Declared type, so take element type. 
+            // Note this works for things like Bean Validation 2.0 @NotNull which comes through as "(@javax.validation.constraints.NotNull :: theUserType)"
+            type = ((DeclaredType)type).asElement().asType();
+        }
+
         if (type.getKind() == TypeKind.BOOLEAN)
         {
             return BooleanExpression.class.getSimpleName();
@@ -751,6 +759,13 @@ public class JDOQueryProcessor extends AbstractProcessor
      */
     private String getExpressionImplClassNameForType(TypeMirror type)
     {
+        if (type.getKind() == TypeKind.DECLARED)
+        {
+            // Declared type, so take element type. 
+            // Note this works for things like Bean Validation 2.0 @NotNull which comes through as "(@javax.validation.constraints.NotNull :: theUserType)"
+            type = ((DeclaredType)type).asElement().asType();
+        }
+
         if (type.getKind() == TypeKind.BOOLEAN)
         {
             return "BooleanExpressionImpl";
