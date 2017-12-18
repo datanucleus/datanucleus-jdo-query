@@ -42,6 +42,7 @@ import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.ExecutableElement;
+import javax.lang.model.element.Modifier;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.TypeParameterElement;
 import javax.lang.model.type.DeclaredType;
@@ -913,18 +914,27 @@ public class JDOQueryProcessor extends AbstractProcessor
             {
                 Element member = iter.next();
                 boolean persistent = true;
-                List<? extends AnnotationMirror> annots = member.getAnnotationMirrors();
-                if (annots != null)
+
+                if (member.getModifiers().contains(Modifier.STATIC))
                 {
-                    Iterator<? extends AnnotationMirror> annotIter = annots.iterator();
-                    while (annotIter.hasNext())
+                    // Don't include static member in Q class
+                    persistent = false;
+                }
+                else
+                {
+                    List<? extends AnnotationMirror> annots = member.getAnnotationMirrors();
+                    if (annots != null)
                     {
-                        AnnotationMirror annot = annotIter.next();
-                        if (annot.getAnnotationType().toString().equals(NotPersistent.class.getName()))
+                        Iterator<? extends AnnotationMirror> annotIter = annots.iterator();
+                        while (annotIter.hasNext())
                         {
-                            // Ignore this
-                            persistent = false;
-                            break;
+                            AnnotationMirror annot = annotIter.next();
+                            if (annot.getAnnotationType().toString().equals(NotPersistent.class.getName()))
+                            {
+                                // Ignore this
+                                persistent = false;
+                                break;
+                            }
                         }
                     }
                 }
