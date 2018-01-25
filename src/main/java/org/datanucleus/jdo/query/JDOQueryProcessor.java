@@ -644,10 +644,12 @@ public class JDOQueryProcessor extends AbstractProcessor
      */
     private String getExpressionInterfaceNameForType(TypeMirror type)
     {
-        if (type.getKind() == TypeKind.DECLARED)
+        if (type.getKind() == TypeKind.DECLARED && type instanceof DeclaredType && type instanceof TypeVariable)
         {
-            // Declared type, so take element type. 
-            // Note this works for things like Bean Validation 2.0 @NotNull which comes through as "(@javax.validation.constraints.NotNull :: theUserType)"
+            // This was needed to detect such as a field with a Bean Validation 2.0 @NotNull, which comes through as 
+            // "(@javax.validation.constraints.NotNull :: theUserType)", so this converts that to "theUserType".
+            // TODO Is this the best way to trap that case ? (i.e "TypeVariable")? probably not, so find a better way
+            // Note that this is also a WildcardType, ReferenceType, ArrayType
             type = ((DeclaredType)type).asElement().asType();
         }
 
