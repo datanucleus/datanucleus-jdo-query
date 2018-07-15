@@ -561,6 +561,7 @@ public class JDOQueryProcessor extends AbstractProcessor
     protected void addConstructorWithType(Writer w, String indent, String qclassNameSimple, List<? extends Element> members, String classNameFull, Map<String, TypeMirror> genericLookups)
     throws IOException
     {
+        w.append(indent).append("@SuppressWarnings(\"unchecked\")\n");
         w.append(indent).append("public " + qclassNameSimple).append("(").append(Class.class.getSimpleName() + " type, String name, ExpressionType exprType)\n");
         w.append(indent).append("{\n");
         w.append(indent).append(CODE_INDENT).append("super(type, name, exprType);\n");
