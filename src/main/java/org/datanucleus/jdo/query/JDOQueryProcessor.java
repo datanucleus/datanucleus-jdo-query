@@ -732,15 +732,15 @@ public class JDOQueryProcessor extends AbstractProcessor
         TypeCategory cat = AnnotationProcessorUtils.getTypeCategoryForTypeMirror(typeName);
         if (cat == TypeCategory.MAP)
         {
-            return MapExpression.class.getSimpleName();
+            return MapExpression.class.getSimpleName(); // TODO Add generics?
         }
         else if (cat == TypeCategory.LIST)
         {
-            return ListExpression.class.getSimpleName();
+            return ListExpression.class.getSimpleName(); // TODO Add generics?
         }
         else if (cat == TypeCategory.COLLECTION || cat == TypeCategory.SET)
         {
-            return CollectionExpression.class.getSimpleName();
+            return CollectionExpression.class.getSimpleName(); // TODO Add generics?
         }
         else
         {
