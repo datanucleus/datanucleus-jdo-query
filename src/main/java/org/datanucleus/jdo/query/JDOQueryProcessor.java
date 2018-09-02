@@ -61,6 +61,7 @@ import javax.jdo.query.CharacterExpression;
 import javax.jdo.query.CollectionExpression;
 import javax.jdo.query.DateExpression;
 import javax.jdo.query.DateTimeExpression;
+import javax.jdo.query.EnumExpression;
 import javax.jdo.query.ListExpression;
 import javax.jdo.query.LocalDateExpression;
 import javax.jdo.query.LocalDateTimeExpression;
@@ -728,6 +729,11 @@ public class JDOQueryProcessor extends AbstractProcessor
         {
             return OptionalExpression.class.getSimpleName();
         }
+        else if (type.getKind() == TypeKind.DECLARED && type instanceof DeclaredType && ((DeclaredType)type).asElement().getKind() == ElementKind.ENUM)
+        {
+            // TODO Is this the best way to detect and Enum??
+            return EnumExpression.class.getSimpleName();
+        }
 
         String typeName = AnnotationProcessorUtils.getDeclaredTypeName(processingEnv, type, true);
         TypeCategory cat = AnnotationProcessorUtils.getTypeCategoryForTypeMirror(typeName);
@@ -843,6 +849,11 @@ public class JDOQueryProcessor extends AbstractProcessor
         else if (type.toString().equals(java.util.Optional.class.getName()))
         {
             return "OptionalExpressionImpl";
+        }
+        else if (type.getKind() == TypeKind.DECLARED && type instanceof DeclaredType && ((DeclaredType)type).asElement().getKind() == ElementKind.ENUM)
+        {
+            // TODO Is this the best way to detect and Enum??
+            return "EnumExpressionImpl";
         }
 
         String typeName = AnnotationProcessorUtils.getDeclaredTypeName(processingEnv, type, true);
