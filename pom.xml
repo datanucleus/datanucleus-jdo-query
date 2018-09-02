@@ -9,7 +9,7 @@
     </parent>
 
     <artifactId>datanucleus-jdo-query</artifactId>
-    <version>5.0.6-SNAPSHOT</version>
+    <version>5.0.6</version>
 
     <name>DataNucleus JDO Query</name>
     <description>
