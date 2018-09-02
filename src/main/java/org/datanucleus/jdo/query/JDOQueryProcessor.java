@@ -267,6 +267,7 @@ public class JDOQueryProcessor extends AbstractProcessor
                                 // TODO If intfName is an inner class of this class then omit this class name
                                 intfName = intfName.substring(classNameFull.length()+1);
                             }
+
                             if (queryMode == MODE_FIELD)
                             {
                                 w.append(indent).append("public final ").append(intfName);
@@ -655,35 +656,35 @@ public class JDOQueryProcessor extends AbstractProcessor
             type = ((DeclaredType)type).asElement().asType();
         }
 
-        if (type.getKind() == TypeKind.BOOLEAN)
+        if (type.getKind() == TypeKind.BOOLEAN || Boolean.class.getName().equals(type.toString()))
         {
             return BooleanExpression.class.getSimpleName();
         }
-        else if (type.getKind() == TypeKind.BYTE)
+        else if (type.getKind() == TypeKind.BYTE || Byte.class.getName().equals(type.toString()))
         {
             return ByteExpression.class.getSimpleName();
         }
-        else if (type.getKind() == TypeKind.CHAR)
+        else if (type.getKind() == TypeKind.CHAR || Character.class.getName().equals(type.toString()))
         {
             return CharacterExpression.class.getSimpleName();
         }
-        else if (type.getKind() == TypeKind.DOUBLE)
+        else if (type.getKind() == TypeKind.DOUBLE || Double.class.getName().equals(type.toString()))
         {
             return NumericExpression.class.getSimpleName() + "<Double>";
         }
-        else if (type.getKind() == TypeKind.FLOAT)
+        else if (type.getKind() == TypeKind.FLOAT || Float.class.getName().equals(type.toString()))
         {
             return NumericExpression.class.getSimpleName() + "<Float>";
         }
-        else if (type.getKind() == TypeKind.INT)
+        else if (type.getKind() == TypeKind.INT || Integer.class.getName().equals(type.toString()))
         {
             return NumericExpression.class.getSimpleName() + "<Integer>";
         }
-        else if (type.getKind() == TypeKind.LONG)
+        else if (type.getKind() == TypeKind.LONG || Long.class.getName().equals(type.toString()))
         {
             return NumericExpression.class.getSimpleName() + "<Long>";
         }
-        else if (type.getKind() == TypeKind.SHORT)
+        else if (type.getKind() == TypeKind.SHORT || Short.class.getName().equals(type.toString()))
         {
             return NumericExpression.class.getSimpleName() + "<Short>";
         }
@@ -771,35 +772,35 @@ public class JDOQueryProcessor extends AbstractProcessor
             type = ((DeclaredType)type).asElement().asType();
         }
 
-        if (type.getKind() == TypeKind.BOOLEAN)
+        if (type.getKind() == TypeKind.BOOLEAN || Boolean.class.getName().equals(type.toString()))
         {
             return "BooleanExpressionImpl";
         }
-        else if (type.getKind() == TypeKind.BYTE)
+        else if (type.getKind() == TypeKind.BYTE || Byte.class.getName().equals(type.toString()))
         {
             return "ByteExpressionImpl";
         }
-        else if (type.getKind() == TypeKind.CHAR)
+        else if (type.getKind() == TypeKind.CHAR || Character.class.getName().equals(type.toString()))
         {
             return "CharacterExpressionImpl";
         }
-        else if (type.getKind() == TypeKind.DOUBLE)
+        else if (type.getKind() == TypeKind.DOUBLE || Double.class.getName().equals(type.toString()))
         {
             return "NumericExpressionImpl<Double>";
         }
-        else if (type.getKind() == TypeKind.FLOAT)
+        else if (type.getKind() == TypeKind.FLOAT || Float.class.getName().equals(type.toString()))
         {
             return "NumericExpressionImpl<Float>";
         }
-        else if (type.getKind() == TypeKind.INT)
+        else if (type.getKind() == TypeKind.INT || Integer.class.getName().equals(type.toString()))
         {
             return "NumericExpressionImpl<Integer>";
         }
-        else if (type.getKind() == TypeKind.LONG)
+        else if (type.getKind() == TypeKind.LONG || Long.class.getName().equals(type.toString()))
         {
             return "NumericExpressionImpl<Long>";
         }
-        else if (type.getKind() == TypeKind.SHORT)
+        else if (type.getKind() == TypeKind.SHORT || Short.class.getName().equals(type.toString()))
         {
             return "NumericExpressionImpl<Short>";
         }
