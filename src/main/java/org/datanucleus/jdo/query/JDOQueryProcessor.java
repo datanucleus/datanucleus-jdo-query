@@ -76,19 +76,17 @@ import javax.jdo.query.TimeExpression;
 import javax.jdo.JDOQLTypedQuery;
 
 /**
- * Annotation processor for JDO to generate "dummy" classes for all persistable classes for use with the 
- * JDOQLTypedQuery API. Any class ({MyClass}) that has a JDO "class" annotation will have a stub class (Q{MyClass}) generated.
+ * Annotation processor for JDO to generate "dummy" classes for all persistable classes for use with the JDOQLTypedQuery API.
+ * Any class ({MyClass}) that has a JDO "class" annotation will have a stub class (Q{MyClass}) generated.
  * <ul>
  * <li>For each managed class X in package p, a metamodel class QX in package p is created.</li>
- * <li>The name of the metamodel class is derived from the name of the managed class by prepending "Q" 
- * to the name of the managed class.</li>
+ * <li>The name of the metamodel class is derived from the name of the managed class by prepending "Q" to the name of the managed class.</li>
  * </ul>
  * 
  * <p>
  * This processor can generate classes in two modes.
  * <ul>
- * <li>Property access - so users type in "field1()", "field1().field2()" etc. 
- * Specify the compiler argument "queryMode" as "PROPERTY" to get this</li>
+ * <li>Property access - so users type in "field1()", "field1().field2()" etc. Specify the compiler argument "queryMode" as "PROPERTY" to get this</li>
  * <li>Field access - so users type in "field1", "field1.field2". This is the default.</li>
  * </ul>
  */
@@ -104,6 +102,8 @@ public class JDOQueryProcessor extends AbstractProcessor
     private final static String CODE_INDENT = "    ";
 
     public int queryMode = MODE_FIELD;
+
+    /** Max field depth to use when generating references to the related Q class(es). */
     public int fieldDepth = 5;
 
     @Override
@@ -606,17 +606,28 @@ public class JDOQueryProcessor extends AbstractProcessor
         w.append(indent).append("}\n");
     }
 
+    /**
+     * Generate accessor for a property.
+     * <pre>
+     * public {type} {memberName}()
+     * {
+     *     if (memberVar == null)
+     *     {
+     *         this.memberVar = new {implClassName}(this, \"memberName\");
+     *     }
+     *     return this.memberVar;
+     * }
+     * </pre>
+     * @param w The writer
+     * @param indent The indent to use
+     * @param member The member we are generating for
+     * @param classNameFull Fully qualified class name
+     * @param genericLookups Lookup for TypeVariables
+     * @throws IOException Thrown if an exception occurs during generation
+     */
     protected void addPropertyAccessorMethod(Writer w, String indent, Element member, String classNameFull, Map<String, TypeMirror> genericLookups)
     throws IOException
     {
-        // public {type} {memberName}()
-        // {
-        //     if (memberVar == null)
-        //     {
-        //         this.memberVar = new {implClassName}(this, \"memberName\");
-        //     }
-        //     return this.memberVar;
-        // }
         TypeMirror type = AnnotationProcessorUtils.getDeclaredType(member);
         if (type instanceof TypeVariable && genericLookups != null && genericLookups.containsKey(type.toString()))
         {
@@ -749,18 +760,17 @@ public class JDOQueryProcessor extends AbstractProcessor
         {
             return CollectionExpression.class.getSimpleName(); // TODO Add generics?
         }
+
+        TypeElement typeElement = (TypeElement) processingEnv.getTypeUtils().asElement(type);
+        if (typeElement != null && isPersistableType(typeElement))
+        {
+            // Persistent field ("mydomain.Xxx" becomes "mydomain.QXxx")
+            return typeName.substring(0, typeName.lastIndexOf('.')+1) + getQueryClassNameForClassName(typeName.substring(typeName.lastIndexOf('.')+1));
+        }
         else
         {
-            TypeElement typeElement = (TypeElement) processingEnv.getTypeUtils().asElement(type);
-            if (typeElement != null && isPersistableType(typeElement))
-            {
-                // Persistent field ("mydomain.Xxx" becomes "mydomain.QXxx")
-                return typeName.substring(0, typeName.lastIndexOf('.')+1) + getQueryClassNameForClassName(typeName.substring(typeName.lastIndexOf('.')+1));
-            }
-            else
-            {
-                return ObjectExpression.class.getSimpleName() + "<" + type.toString() + ">";
-            }
+            // Fallback to "ObjectExpression<{type}>" for this field/property type
+            return ObjectExpression.class.getSimpleName() + "<" + type.toString() + ">";
         }
     }
 
@@ -870,18 +880,17 @@ public class JDOQueryProcessor extends AbstractProcessor
         {
             return "CollectionExpressionImpl";
         }
+
+        TypeElement typeElement = (TypeElement) processingEnv.getTypeUtils().asElement(type);
+        if (typeElement != null && isPersistableType(typeElement))
+        {
+            // Persistent field ("mydomain.Xxx" becomes "mydomain.QXxx")
+            return typeName.substring(0, typeName.lastIndexOf('.')+1) + getQueryClassNameForClassName(typeName.substring(typeName.lastIndexOf('.')+1));
+        }
         else
         {
-            TypeElement typeElement = (TypeElement) processingEnv.getTypeUtils().asElement(type);
-            if (typeElement != null && isPersistableType(typeElement))
-            {
-                // Persistent field ("mydomain.Xxx" becomes "mydomain.QXxx")
-                return typeName.substring(0, typeName.lastIndexOf('.')+1) + getQueryClassNameForClassName(typeName.substring(typeName.lastIndexOf('.')+1));
-            }
-            else
-            {
-                return "ObjectExpressionImpl<" + type.toString() + ">";
-            }
+            // Fallback to "ObjectExpressionImpl<{type}>" for this field/property type
+            return "ObjectExpressionImpl<" + type.toString() + ">";
         }
     }
 
@@ -900,7 +909,7 @@ public class JDOQueryProcessor extends AbstractProcessor
         return false;
     }
 
-    public boolean isPersistableType(TypeElement el)
+    private boolean isPersistableType(TypeElement el)
     {
         if (el == null)
         {
@@ -971,7 +980,7 @@ public class JDOQueryProcessor extends AbstractProcessor
     public TypeElement getPersistentSupertype(TypeElement element)
     {
         TypeMirror superType = element.getSuperclass();
-        if (superType == null || "java.lang.Object".equals(element.toString()))
+        if (superType == null || Object.class.getName().equals(element.toString()))
         {
             return null;
         }
