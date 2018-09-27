@@ -742,9 +742,10 @@ public class JDOQueryProcessor extends AbstractProcessor
         }
         else if (type.getKind() == TypeKind.DECLARED && type instanceof DeclaredType && ((DeclaredType)type).asElement().getKind() == ElementKind.ENUM)
         {
-            // TODO Is this the best way to detect and Enum??
+            // TODO Is this the best way to detect an Enum??
             return EnumExpression.class.getSimpleName();
         }
+        // TODO Support geospatial types here since they can invoke methods
 
         String typeName = AnnotationProcessorUtils.getDeclaredTypeName(processingEnv, type, true);
         TypeCategory cat = AnnotationProcessorUtils.getTypeCategoryForTypeMirror(typeName);
@@ -862,9 +863,10 @@ public class JDOQueryProcessor extends AbstractProcessor
         }
         else if (type.getKind() == TypeKind.DECLARED && type instanceof DeclaredType && ((DeclaredType)type).asElement().getKind() == ElementKind.ENUM)
         {
-            // TODO Is this the best way to detect and Enum??
+            // TODO Is this the best way to detect an Enum??
             return "EnumExpressionImpl";
         }
+        // TODO Support geospatial types here since they can invoke methods
 
         String typeName = AnnotationProcessorUtils.getDeclaredTypeName(processingEnv, type, true);
         TypeCategory cat = AnnotationProcessorUtils.getTypeCategoryForTypeMirror(typeName);
