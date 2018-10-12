@@ -106,6 +106,8 @@ public class JDOQueryProcessor extends AbstractProcessor
     /** Max field depth to use when generating references to the related Q class(es). */
     public int fieldDepth = 5;
 
+    boolean allowGeospatialExtensions = false;
+
     @Override
     public synchronized void init(ProcessingEnvironment pe)
     {
@@ -120,6 +122,16 @@ public class JDOQueryProcessor extends AbstractProcessor
             this.queryMode = MODE_FIELD;
         }
 
+        // Check for geospatial extensions
+        try
+        {
+            Class.forName("javax.jdo.query.geospatial.GeometryExpression");
+            allowGeospatialExtensions = true;
+        }
+        catch (Throwable thr)
+        {
+        }
+        
         // TODO Parse persistence.xml and extract names of classes that are persistable
 //        pe.getElementUtils().getTypeElement(fullyQualifiedClassName);
     }
@@ -668,75 +680,76 @@ public class JDOQueryProcessor extends AbstractProcessor
             type = ((DeclaredType)type).asElement().asType();
         }
 
-        if (type.getKind() == TypeKind.BOOLEAN || Boolean.class.getName().equals(type.toString()))
+        String typeName = type.toString();
+        if (type.getKind() == TypeKind.BOOLEAN || Boolean.class.getName().equals(typeName))
         {
             return BooleanExpression.class.getSimpleName();
         }
-        else if (type.getKind() == TypeKind.BYTE || Byte.class.getName().equals(type.toString()))
+        else if (type.getKind() == TypeKind.BYTE || Byte.class.getName().equals(typeName))
         {
             return ByteExpression.class.getSimpleName();
         }
-        else if (type.getKind() == TypeKind.CHAR || Character.class.getName().equals(type.toString()))
+        else if (type.getKind() == TypeKind.CHAR || Character.class.getName().equals(typeName))
         {
             return CharacterExpression.class.getSimpleName();
         }
-        else if (type.getKind() == TypeKind.DOUBLE || Double.class.getName().equals(type.toString()))
+        else if (type.getKind() == TypeKind.DOUBLE || Double.class.getName().equals(typeName))
         {
             return NumericExpression.class.getSimpleName() + "<Double>";
         }
-        else if (type.getKind() == TypeKind.FLOAT || Float.class.getName().equals(type.toString()))
+        else if (type.getKind() == TypeKind.FLOAT || Float.class.getName().equals(typeName))
         {
             return NumericExpression.class.getSimpleName() + "<Float>";
         }
-        else if (type.getKind() == TypeKind.INT || Integer.class.getName().equals(type.toString()))
+        else if (type.getKind() == TypeKind.INT || Integer.class.getName().equals(typeName))
         {
             return NumericExpression.class.getSimpleName() + "<Integer>";
         }
-        else if (type.getKind() == TypeKind.LONG || Long.class.getName().equals(type.toString()))
+        else if (type.getKind() == TypeKind.LONG || Long.class.getName().equals(typeName))
         {
             return NumericExpression.class.getSimpleName() + "<Long>";
         }
-        else if (type.getKind() == TypeKind.SHORT || Short.class.getName().equals(type.toString()))
+        else if (type.getKind() == TypeKind.SHORT || Short.class.getName().equals(typeName))
         {
             return NumericExpression.class.getSimpleName() + "<Short>";
         }
-        else if (type.toString().equals(BigInteger.class.getName()))
+        else if (typeName.equals(BigInteger.class.getName()))
         {
             return NumericExpression.class.getSimpleName() + "<java.math.BigInteger>";
         }
-        else if (type.toString().equals(BigDecimal.class.getName()))
+        else if (typeName.equals(BigDecimal.class.getName()))
         {
             return NumericExpression.class.getSimpleName() + "<java.math.BigDecimal>";
         }
-        else if (type.toString().equals(String.class.getName()))
+        else if (typeName.equals(String.class.getName()))
         {
             return StringExpression.class.getSimpleName();
         }
-        else if (type.toString().equals(Date.class.getName()))
+        else if (typeName.equals(Date.class.getName()))
         {
             return DateTimeExpression.class.getSimpleName();
         }
-        else if (type.toString().equals(java.sql.Date.class.getName()))
+        else if (typeName.equals(java.sql.Date.class.getName()))
         {
             return DateExpression.class.getSimpleName();
         }
-        else if (type.toString().equals(java.sql.Time.class.getName()))
+        else if (typeName.equals(java.sql.Time.class.getName()))
         {
             return TimeExpression.class.getSimpleName();
         }
-        else if (type.toString().equals(LocalDate.class.getName()))
+        else if (typeName.equals(LocalDate.class.getName()))
         {
             return LocalDateExpression.class.getSimpleName();
         }
-        else if (type.toString().equals(LocalTime.class.getName()))
+        else if (typeName.equals(LocalTime.class.getName()))
         {
             return LocalTimeExpression.class.getSimpleName();
         }
-        else if (type.toString().equals(LocalDateTime.class.getName()))
+        else if (typeName.equals(LocalDateTime.class.getName()))
         {
             return LocalDateTimeExpression.class.getSimpleName();
         }
-        else if (type.toString().equals(java.util.Optional.class.getName()))
+        else if (typeName.equals(java.util.Optional.class.getName()))
         {
             return OptionalExpression.class.getSimpleName();
         }
@@ -745,10 +758,74 @@ public class JDOQueryProcessor extends AbstractProcessor
             // TODO Is this the best way to detect an Enum??
             return EnumExpression.class.getSimpleName();
         }
-        // TODO Support geospatial types here since they can invoke methods
+        if (allowGeospatialExtensions)
+        {
+            // Support geospatial types here since they can invoke methods
+            if (typeName.startsWith("com.vividsolutions.jts.geom"))
+            {
+                // Vividsolutions JTS
+                if (typeName.equals("com.vividsolutions.jts.geom.Polygon"))
+                {
+                    return "javax.jdo.query.geospatial.PolygonExpression";
+                }
+                else if (typeName.equals("com.vividsolutions.jts.geom.LineString"))
+                {
+                    return "javax.jdo.query.geospatial.LineStringExpression";
+                }
+                else if (typeName.equals("com.vividsolutions.jts.geom.LineString"))
+                {
+                    return "javax.jdo.query.geospatial.LinearRingExpression";
+                }
+                else if (typeName.equals("com.vividsolutions.jts.geom.MultiLineString"))
+                {
+                    return "javax.jdo.query.geospatial.MultiLineStringExpression";
+                }
+                else if (typeName.equals("com.vividsolutions.jts.geom.Point"))
+                {
+                    return "javax.jdo.query.geospatial.PointExpression";
+                }
+                else
+                {
+                    return "javax.jdo.query.geospatial.GeometryExpression";
+                }
+            }
+            else if (typeName.startsWith("org.postgis"))
+            {
+                // PostGIS
+                if (typeName.equals("org.postgis.Polygon"))
+                {
+                    return "javax.jdo.query.geospatial.PolygonExpression";
+                }
+                else if (typeName.equals("org.postgis.LineString"))
+                {
+                    return "javax.jdo.query.geospatial.LineStringExpression";
+                }
+                else if (typeName.equals("org.postgis.LineString"))
+                {
+                    return "javax.jdo.query.geospatial.LinearRingExpression";
+                }
+                else if (typeName.equals("org.postgis.MultiLineString"))
+                {
+                    return "javax.jdo.query.geospatial.MultiLineStringExpression";
+                }
+                else if (typeName.equals("org.postgis.Point"))
+                {
+                    return "javax.jdo.query.geospatial.PointExpression";
+                }
+                else
+                {
+                    return "javax.jdo.query.geospatial.GeometryExpression";
+                }
+            }
+            else if (typeName.equals("oracle.spatial.geometry.JGeometry"))
+            {
+                // Oracle JGeometry
+                return "javax.jdo.query.geospatial.GeometryExpression";
+            }
+        }
 
-        String typeName = AnnotationProcessorUtils.getDeclaredTypeName(processingEnv, type, true);
-        TypeCategory cat = AnnotationProcessorUtils.getTypeCategoryForTypeMirror(typeName);
+        String declTypeName = AnnotationProcessorUtils.getDeclaredTypeName(processingEnv, type, true);
+        TypeCategory cat = AnnotationProcessorUtils.getTypeCategoryForTypeMirror(declTypeName);
         if (cat == TypeCategory.MAP)
         {
             return MapExpression.class.getSimpleName(); // TODO Add generics?
@@ -766,12 +843,12 @@ public class JDOQueryProcessor extends AbstractProcessor
         if (typeElement != null && isPersistableType(typeElement))
         {
             // Persistent field ("mydomain.Xxx" becomes "mydomain.QXxx")
-            return typeName.substring(0, typeName.lastIndexOf('.')+1) + getQueryClassNameForClassName(typeName.substring(typeName.lastIndexOf('.')+1));
+            return declTypeName.substring(0, declTypeName.lastIndexOf('.')+1) + getQueryClassNameForClassName(declTypeName.substring(declTypeName.lastIndexOf('.')+1));
         }
         else
         {
             // Fallback to "ObjectExpression<{type}>" for this field/property type
-            return ObjectExpression.class.getSimpleName() + "<" + type.toString() + ">";
+            return ObjectExpression.class.getSimpleName() + "<" + typeName + ">";
         }
     }
 
@@ -789,75 +866,76 @@ public class JDOQueryProcessor extends AbstractProcessor
             type = ((DeclaredType)type).asElement().asType();
         }
 
-        if (type.getKind() == TypeKind.BOOLEAN || Boolean.class.getName().equals(type.toString()))
+        String typeName = type.toString();
+        if (type.getKind() == TypeKind.BOOLEAN || Boolean.class.getName().equals(typeName))
         {
             return "BooleanExpressionImpl";
         }
-        else if (type.getKind() == TypeKind.BYTE || Byte.class.getName().equals(type.toString()))
+        else if (type.getKind() == TypeKind.BYTE || Byte.class.getName().equals(typeName))
         {
             return "ByteExpressionImpl";
         }
-        else if (type.getKind() == TypeKind.CHAR || Character.class.getName().equals(type.toString()))
+        else if (type.getKind() == TypeKind.CHAR || Character.class.getName().equals(typeName))
         {
             return "CharacterExpressionImpl";
         }
-        else if (type.getKind() == TypeKind.DOUBLE || Double.class.getName().equals(type.toString()))
+        else if (type.getKind() == TypeKind.DOUBLE || Double.class.getName().equals(typeName))
         {
             return "NumericExpressionImpl<Double>";
         }
-        else if (type.getKind() == TypeKind.FLOAT || Float.class.getName().equals(type.toString()))
+        else if (type.getKind() == TypeKind.FLOAT || Float.class.getName().equals(typeName))
         {
             return "NumericExpressionImpl<Float>";
         }
-        else if (type.getKind() == TypeKind.INT || Integer.class.getName().equals(type.toString()))
+        else if (type.getKind() == TypeKind.INT || Integer.class.getName().equals(typeName))
         {
             return "NumericExpressionImpl<Integer>";
         }
-        else if (type.getKind() == TypeKind.LONG || Long.class.getName().equals(type.toString()))
+        else if (type.getKind() == TypeKind.LONG || Long.class.getName().equals(typeName))
         {
             return "NumericExpressionImpl<Long>";
         }
-        else if (type.getKind() == TypeKind.SHORT || Short.class.getName().equals(type.toString()))
+        else if (type.getKind() == TypeKind.SHORT || Short.class.getName().equals(typeName))
         {
             return "NumericExpressionImpl<Short>";
         }
-        else if (type.toString().equals(BigInteger.class.getName()))
+        else if (typeName.equals(BigInteger.class.getName()))
         {
             return "NumericExpressionImpl<java.math.BigInteger>";
         }
-        else if (type.toString().equals(BigDecimal.class.getName()))
+        else if (typeName.equals(BigDecimal.class.getName()))
         {
             return "NumericExpressionImpl<java.math.BigDecimal>";
         }
-        else if (type.toString().equals(String.class.getName()))
+        else if (typeName.equals(String.class.getName()))
         {
             return "StringExpressionImpl";
         }
-        else if (type.toString().equals(Date.class.getName()))
+        else if (typeName.equals(Date.class.getName()))
         {
             return "DateTimeExpressionImpl";
         }
-        else if (type.toString().equals(java.sql.Date.class.getName()))
+        else if (typeName.equals(java.sql.Date.class.getName()))
         {
             return "DateExpressionImpl";
         }
-        else if (type.toString().equals(java.sql.Time.class.getName()))
+        else if (typeName.equals(java.sql.Time.class.getName()))
         {
             return "TimeExpressionImpl";
         }
-        else if (type.toString().equals(LocalDate.class.getName()))
+        else if (typeName.equals(LocalDate.class.getName()))
         {
             return "LocalDateExpressionImpl";
         }
-        else if (type.toString().equals(LocalTime.class.getName()))
+        else if (typeName.equals(LocalTime.class.getName()))
         {
             return "LocalTimeExpressionImpl";
         }
-        else if (type.toString().equals(LocalDateTime.class.getName()))
+        else if (typeName.equals(LocalDateTime.class.getName()))
         {
             return "LocalDateTimeExpressionImpl";
         }
-        else if (type.toString().equals(java.util.Optional.class.getName()))
+        else if (typeName.equals(java.util.Optional.class.getName()))
         {
             return "OptionalExpressionImpl";
         }
@@ -866,10 +944,75 @@ public class JDOQueryProcessor extends AbstractProcessor
             // TODO Is this the best way to detect an Enum??
             return "EnumExpressionImpl";
         }
-        // TODO Support geospatial types here since they can invoke methods
 
-        String typeName = AnnotationProcessorUtils.getDeclaredTypeName(processingEnv, type, true);
-        TypeCategory cat = AnnotationProcessorUtils.getTypeCategoryForTypeMirror(typeName);
+        if (allowGeospatialExtensions)
+        {
+            // Support geospatial types here since they can invoke methods
+            if (typeName.startsWith("com.vividsolutions.jts.geom"))
+            {
+                // Vividsolutions JTS
+                if (typeName.equals("com.vividsolutions.jts.geom.Polygon"))
+                {
+                    return "org.datanucleus.api.jdo.query.geospatial.PolygonExpressionImpl";
+                }
+                else if (typeName.equals("com.vividsolutions.jts.geom.LineString"))
+                {
+                    return "org.datanucleus.api.jdo.query.geospatial.LineStringExpressionImpl";
+                }
+                else if (typeName.equals("com.vividsolutions.jts.geom.LineString"))
+                {
+                    return "org.datanucleus.api.jdo.query.geospatial.LinearRingExpressionImpl";
+                }
+                else if (typeName.equals("com.vividsolutions.jts.geom.MultiLineString"))
+                {
+                    return "org.datanucleus.api.jdo.query.geospatial.MultiLineStringExpressionImpl";
+                }
+                else if (typeName.equals("com.vividsolutions.jts.geom.Point"))
+                {
+                    return "org.datanucleus.api.jdo.query.geospatial.PointExpressionImpl";
+                }
+                else
+                {
+                    return "org.datanucleus.api.jdo.query.geospatial.GeometryExpressionImpl";
+                }
+            }
+            else if (typeName.startsWith("org.postgis"))
+            {
+                // PostGIS
+                if (typeName.equals("org.postgis.Polygon"))
+                {
+                    return "org.datanucleus.api.jdo.query.geospatial.PolygonExpressionImpl";
+                }
+                else if (typeName.equals("org.postgis.LineString"))
+                {
+                    return "org.datanucleus.api.jdo.query.geospatial.LineStringExpressionImpl";
+                }
+                else if (typeName.equals("org.postgis.LineString"))
+                {
+                    return "org.datanucleus.api.jdo.query.geospatial.LinearRingExpressionImpl";
+                }
+                else if (typeName.equals("org.postgis.MultiLineString"))
+                {
+                    return "org.datanucleus.api.jdo.query.geospatial.MultiLineStringExpressionImpl";
+                }
+                else if (typeName.equals("org.postgis.Point"))
+                {
+                    return "org.datanucleus.api.jdo.query.geospatial.PointExpressionImpl";
+                }
+                else
+                {
+                    return "org.datanucleus.api.jdo.query.geospatial.GeometryExpressionImpl";
+                }
+            }
+            else if (typeName.equals("oracle.spatial.geometry.JGeometry"))
+            {
+                // Oracle JGeometry
+                return "org.datanucleus.api.jdo.query.geospatial.GeometryExpressionImpl";
+            }
+        }
+
+        String declTypeName = AnnotationProcessorUtils.getDeclaredTypeName(processingEnv, type, true);
+        TypeCategory cat = AnnotationProcessorUtils.getTypeCategoryForTypeMirror(declTypeName);
         if (cat == TypeCategory.MAP)
         {
             return "MapExpressionImpl";
@@ -887,12 +1030,12 @@ public class JDOQueryProcessor extends AbstractProcessor
         if (typeElement != null && isPersistableType(typeElement))
         {
             // Persistent field ("mydomain.Xxx" becomes "mydomain.QXxx")
-            return typeName.substring(0, typeName.lastIndexOf('.')+1) + getQueryClassNameForClassName(typeName.substring(typeName.lastIndexOf('.')+1));
+            return declTypeName.substring(0, declTypeName.lastIndexOf('.')+1) + getQueryClassNameForClassName(declTypeName.substring(declTypeName.lastIndexOf('.')+1));
         }
         else
         {
             // Fallback to "ObjectExpressionImpl<{type}>" for this field/property type
-            return "ObjectExpressionImpl<" + type.toString() + ">";
+            return "ObjectExpressionImpl<" + typeName + ">";
         }
     }
 
