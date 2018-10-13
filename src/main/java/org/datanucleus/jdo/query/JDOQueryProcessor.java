@@ -768,11 +768,15 @@ public class JDOQueryProcessor extends AbstractProcessor
                 {
                     return "javax.jdo.query.geospatial.PolygonExpression";
                 }
+                else if (typeName.equals("com.vividsolutions.jts.geom.Point"))
+                {
+                    return "javax.jdo.query.geospatial.PointExpression";
+                }
                 else if (typeName.equals("com.vividsolutions.jts.geom.LineString"))
                 {
                     return "javax.jdo.query.geospatial.LineStringExpression";
                 }
-                else if (typeName.equals("com.vividsolutions.jts.geom.LineString"))
+                else if (typeName.equals("com.vividsolutions.jts.geom.LinearRing"))
                 {
                     return "javax.jdo.query.geospatial.LinearRingExpression";
                 }
@@ -780,9 +784,13 @@ public class JDOQueryProcessor extends AbstractProcessor
                 {
                     return "javax.jdo.query.geospatial.MultiLineStringExpression";
                 }
-                else if (typeName.equals("com.vividsolutions.jts.geom.Point"))
+                else if (typeName.equals("com.vividsolutions.jts.geom.MultiPoint"))
                 {
-                    return "javax.jdo.query.geospatial.PointExpression";
+                    return "javax.jdo.query.geospatial.MultiPointExpression";
+                }
+                else if (typeName.equals("com.vividsolutions.jts.geom.MultiPolygon"))
+                {
+                    return "javax.jdo.query.geospatial.MultiPolygonExpression";
                 }
                 else
                 {
@@ -796,21 +804,29 @@ public class JDOQueryProcessor extends AbstractProcessor
                 {
                     return "javax.jdo.query.geospatial.PolygonExpression";
                 }
+                else if (typeName.equals("org.postgis.Point"))
+                {
+                    return "javax.jdo.query.geospatial.PointExpression";
+                }
                 else if (typeName.equals("org.postgis.LineString"))
                 {
                     return "javax.jdo.query.geospatial.LineStringExpression";
                 }
-                else if (typeName.equals("org.postgis.LineString"))
+                else if (typeName.equals("org.postgis.LinearRing"))
                 {
                     return "javax.jdo.query.geospatial.LinearRingExpression";
+                }
+                else if (typeName.equals("org.postgis.MultiPolygon"))
+                {
+                    return "javax.jdo.query.geospatial.MultiPolygonExpression";
+                }
+                else if (typeName.equals("org.postgis.MultiPoint"))
+                {
+                    return "javax.jdo.query.geospatial.MultiPointExpression";
                 }
                 else if (typeName.equals("org.postgis.MultiLineString"))
                 {
                     return "javax.jdo.query.geospatial.MultiLineStringExpression";
-                }
-                else if (typeName.equals("org.postgis.Point"))
-                {
-                    return "javax.jdo.query.geospatial.PointExpression";
                 }
                 else
                 {
@@ -955,21 +971,29 @@ public class JDOQueryProcessor extends AbstractProcessor
                 {
                     return "org.datanucleus.api.jdo.query.geospatial.PolygonExpressionImpl";
                 }
+                else if (typeName.equals("com.vividsolutions.jts.geom.Point"))
+                {
+                    return "org.datanucleus.api.jdo.query.geospatial.PointExpressionImpl";
+                }
                 else if (typeName.equals("com.vividsolutions.jts.geom.LineString"))
                 {
                     return "org.datanucleus.api.jdo.query.geospatial.LineStringExpressionImpl";
                 }
-                else if (typeName.equals("com.vividsolutions.jts.geom.LineString"))
+                else if (typeName.equals("com.vividsolutions.jts.geom.LinearRing"))
                 {
                     return "org.datanucleus.api.jdo.query.geospatial.LinearRingExpressionImpl";
+                }
+                else if (typeName.equals("com.vividsolutions.jts.geom.MultiPolygon"))
+                {
+                    return "org.datanucleus.api.jdo.query.geospatial.MultiPolygonExpressionImpl";
+                }
+                else if (typeName.equals("com.vividsolutions.jts.geom.MultiPoint"))
+                {
+                    return "org.datanucleus.api.jdo.query.geospatial.MultiPointExpressionImpl";
                 }
                 else if (typeName.equals("com.vividsolutions.jts.geom.MultiLineString"))
                 {
                     return "org.datanucleus.api.jdo.query.geospatial.MultiLineStringExpressionImpl";
-                }
-                else if (typeName.equals("com.vividsolutions.jts.geom.Point"))
-                {
-                    return "org.datanucleus.api.jdo.query.geospatial.PointExpressionImpl";
                 }
                 else
                 {
@@ -983,21 +1007,29 @@ public class JDOQueryProcessor extends AbstractProcessor
                 {
                     return "org.datanucleus.api.jdo.query.geospatial.PolygonExpressionImpl";
                 }
+                else if (typeName.equals("org.postgis.Point"))
+                {
+                    return "org.datanucleus.api.jdo.query.geospatial.PointExpressionImpl";
+                }
                 else if (typeName.equals("org.postgis.LineString"))
                 {
                     return "org.datanucleus.api.jdo.query.geospatial.LineStringExpressionImpl";
                 }
-                else if (typeName.equals("org.postgis.LineString"))
+                else if (typeName.equals("org.postgis.LinearRing"))
                 {
                     return "org.datanucleus.api.jdo.query.geospatial.LinearRingExpressionImpl";
+                }
+                else if (typeName.equals("org.postgis.MultiPolygon"))
+                {
+                    return "org.datanucleus.api.jdo.query.geospatial.MultiPolygonExpressionImpl";
+                }
+                else if (typeName.equals("org.postgis.MultiPoint"))
+                {
+                    return "org.datanucleus.api.jdo.query.geospatial.MultiPointExpressionImpl";
                 }
                 else if (typeName.equals("org.postgis.MultiLineString"))
                 {
                     return "org.datanucleus.api.jdo.query.geospatial.MultiLineStringExpressionImpl";
-                }
-                else if (typeName.equals("org.postgis.Point"))
-                {
-                    return "org.datanucleus.api.jdo.query.geospatial.PointExpressionImpl";
                 }
                 else
                 {
