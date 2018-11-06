@@ -126,7 +126,6 @@ public class JDOQueryProcessor extends AbstractProcessor
         try
         {
             Class.forName("javax.jdo.query.geospatial.GeometryExpression");
-            Class.forName("org.datanucleus.api.jdo.query.geospatial.GeometryExpressionImpl");
             allowGeospatialExtensions = true;
         }
         catch (Throwable thr)
