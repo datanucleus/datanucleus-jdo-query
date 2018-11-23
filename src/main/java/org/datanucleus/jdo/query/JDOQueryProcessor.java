@@ -749,7 +749,7 @@ public class JDOQueryProcessor extends AbstractProcessor
         {
             return LocalDateTimeExpression.class.getSimpleName();
         }
-        else if (typeName.equals(java.util.Optional.class.getName()))
+        else if (typeName.startsWith(java.util.Optional.class.getName()))
         {
             return OptionalExpression.class.getSimpleName();
         }
@@ -864,7 +864,12 @@ public class JDOQueryProcessor extends AbstractProcessor
         else
         {
             // Fallback to "ObjectExpression<{type}>" for this field/property type
-            return ObjectExpression.class.getSimpleName() + "<" + typeName + ">";
+            String typeNameWithoutGenerics = typeName;
+            if (typeName.indexOf("<") > 0)
+            {
+                typeNameWithoutGenerics = typeNameWithoutGenerics.substring(0, typeName.indexOf("<"));
+            }
+            return ObjectExpression.class.getSimpleName() + "<" + typeNameWithoutGenerics + ">";
         }
     }
 
@@ -951,7 +956,7 @@ public class JDOQueryProcessor extends AbstractProcessor
         {
             return "LocalDateTimeExpressionImpl";
         }
-        else if (typeName.equals(java.util.Optional.class.getName()))
+        else if (typeName.startsWith(java.util.Optional.class.getName()))
         {
             return "OptionalExpressionImpl";
         }
@@ -1067,7 +1072,12 @@ public class JDOQueryProcessor extends AbstractProcessor
         else
         {
             // Fallback to "ObjectExpressionImpl<{type}>" for this field/property type
-            return "ObjectExpressionImpl<" + typeName + ">";
+            String typeNameWithoutGenerics = typeName;
+            if (typeName.indexOf("<") > 0)
+            {
+                typeNameWithoutGenerics = typeNameWithoutGenerics.substring(0, typeName.indexOf("<"));
+            }
+            return "ObjectExpressionImpl<" + typeNameWithoutGenerics + ">";
         }
     }
 
