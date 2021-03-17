@@ -207,7 +207,7 @@ public class JDOQueryProcessor extends AbstractProcessor
                 // Package declaration and imports
                 w.append("package " + pkgName + ";\n");
                 w.append("\n");
-                w.append("import javax.annotation.Generated;\n");
+                w.append("import javax.annotation.processing.Generated;\n");
                 w.append("import javax.jdo.query.*;\n");
                 w.append("import org.datanucleus.api.jdo.query.*;\n");
                 List<? extends Element> encElems = el.getEnclosedElements();
