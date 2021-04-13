@@ -681,6 +681,17 @@ public class JDOQueryProcessor extends AbstractProcessor
         }
 
         String typeName = type.toString();
+        if (typeName.charAt(0) == '@' && typeName.indexOf(' ') > 0)
+        {
+            // If we have a field
+            // @Min(1) private Integer myField;
+            // this sometimes comes through as
+            // @javax.validation.constraints.Min(1L) java.lang.Integer
+            // WHY???
+            // Strip off the annotation part and just use the type name. TODO Find a better way (and reason)
+            typeName = typeName.substring(typeName.indexOf(' ')+1);
+        }
+
         if (type.getKind() == TypeKind.BOOLEAN || Boolean.class.getName().equals(typeName))
         {
             return BooleanExpression.class.getSimpleName();
