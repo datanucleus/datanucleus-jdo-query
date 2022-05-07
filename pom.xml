@@ -5,7 +5,7 @@
     <parent>
         <groupId>org.datanucleus</groupId>
         <artifactId>datanucleus-maven-parent</artifactId>
-        <version>6.0.0-m1</version>
+        <version>6.0.0-release</version>
     </parent>
 
     <artifactId>datanucleus-jdo-query</artifactId>
@@ -17,7 +17,7 @@
     </description>
 
     <properties>
-        <jdo.version>3.2.0-m13</jdo.version>
+        <jdo.version>3.2.0-release</jdo.version>
     </properties>
 
     <scm>
