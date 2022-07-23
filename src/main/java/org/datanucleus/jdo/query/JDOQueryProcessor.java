@@ -575,7 +575,7 @@ public class JDOQueryProcessor extends AbstractProcessor
     protected void addConstructorWithType(Writer w, String indent, String qclassNameSimple, List<? extends Element> members, String classNameFull, Map<String, TypeMirror> genericLookups)
     throws IOException
     {
-        w.append(indent).append("public " + qclassNameSimple).append("(").append(Class.class.getSimpleName() + " type, String name, ExpressionType exprType)\n");
+        w.append(indent).append("public " + qclassNameSimple).append("(").append(Class.class.getSimpleName() + "<?> type, String name, ExpressionType exprType)\n");
         w.append(indent).append("{\n");
         w.append(indent).append(CODE_INDENT).append("super(type, name, exprType);\n");
         if (queryMode == MODE_FIELD && members != null)
@@ -671,13 +671,19 @@ public class JDOQueryProcessor extends AbstractProcessor
      */
     private String getExpressionInterfaceNameForType(TypeMirror type)
     {
-        if (type.getKind() == TypeKind.DECLARED && type instanceof DeclaredType && type instanceof TypeVariable)
+        List<? extends TypeMirror> typeArgs = null; // Generic type args for this type
+        if (type.getKind() == TypeKind.DECLARED)
         {
-            // This was needed to detect such as a field with a Bean Validation 2.0 @NotNull, which comes through as 
-            // "(@javax.validation.constraints.NotNull :: theUserType)", so this converts that to "theUserType".
-            // TODO Is this the best way to trap that case ? (i.e "TypeVariable")? probably not, so find a better way
-            // Note that this is also a WildcardType, ReferenceType, ArrayType
-            type = ((DeclaredType)type).asElement().asType();
+            typeArgs = ((DeclaredType) type).getTypeArguments();
+
+            if (type instanceof TypeVariable)
+            {
+                // This was needed to detect such as a field with a Bean Validation 2.0 @NotNull, which comes through as 
+                // "(@javax.validation.constraints.NotNull :: theUserType)", so this converts that to "theUserType".
+                // TODO Is this the best way to trap that case ? (i.e "TypeVariable")? probably not, so find a better way
+                // Note that this is also a WildcardType, ReferenceType, ArrayType
+                type = ((DeclaredType)type).asElement().asType();
+            }
         }
 
         String typeName = type.toString();
@@ -762,6 +768,10 @@ public class JDOQueryProcessor extends AbstractProcessor
         }
         else if (typeName.startsWith(java.util.Optional.class.getName()))
         {
+            if (typeArgs != null)
+            {
+                return OptionalExpression.class.getSimpleName() + "<" + typeArgs.get(0).toString() + ">";
+            }
             return OptionalExpression.class.getSimpleName();
         }
         else if (type.getKind() == TypeKind.DECLARED && type instanceof DeclaredType && ((DeclaredType)type).asElement().getKind() == ElementKind.ENUM)
@@ -874,9 +884,9 @@ public class JDOQueryProcessor extends AbstractProcessor
         }
         else
         {
-            // Fallback to "ObjectExpression<{type}>" for this field/property type
+            // Fallback to "ObjectExpression<{type}>" for this field/property type, omitting any generics on the type
             String typeNameWithoutGenerics = typeName;
-            if (typeName.indexOf("<") > 0)
+            if (typeName.indexOf("<") > 0) // TODO Maybe use typeArgs to do this?
             {
                 typeNameWithoutGenerics = typeNameWithoutGenerics.substring(0, typeName.indexOf("<"));
             }
@@ -891,11 +901,19 @@ public class JDOQueryProcessor extends AbstractProcessor
      */
     private String getExpressionImplClassNameForType(TypeMirror type)
     {
+        List<? extends TypeMirror> typeArgs = null; // Generic type args for this type
         if (type.getKind() == TypeKind.DECLARED)
         {
-            // Declared type, so take element type. 
-            // Note this works for things like Bean Validation 2.0 @NotNull which comes through as "(@javax.validation.constraints.NotNull :: theUserType)"
-            type = ((DeclaredType)type).asElement().asType();
+            typeArgs = ((DeclaredType) type).getTypeArguments();
+
+            if (type instanceof TypeVariable)
+            {
+                // This was needed to detect such as a field with a Bean Validation 2.0 @NotNull, which comes through as 
+                // "(@javax.validation.constraints.NotNull :: theUserType)", so this converts that to "theUserType".
+                // TODO Is this the best way to trap that case ? (i.e "TypeVariable")? probably not, so find a better way
+                // Note that this is also a WildcardType, ReferenceType, ArrayType
+                type = ((DeclaredType)type).asElement().asType();
+            }
         }
 
         String typeName = type.toString();
@@ -969,6 +987,10 @@ public class JDOQueryProcessor extends AbstractProcessor
         }
         else if (typeName.startsWith(java.util.Optional.class.getName()))
         {
+            if (typeArgs != null)
+            {
+                return "OptionalExpressionImpl<" + typeArgs.get(0).toString() + ">";
+            }
             return "OptionalExpressionImpl";
         }
         else if (type.getKind() == TypeKind.DECLARED && type instanceof DeclaredType && ((DeclaredType)type).asElement().getKind() == ElementKind.ENUM)
@@ -1082,9 +1104,9 @@ public class JDOQueryProcessor extends AbstractProcessor
         }
         else
         {
-            // Fallback to "ObjectExpressionImpl<{type}>" for this field/property type
+            // Fallback to "ObjectExpressionImpl<{type}>" for this field/property type, omitting any generics on the type
             String typeNameWithoutGenerics = typeName;
-            if (typeName.indexOf("<") > 0)
+            if (typeName.indexOf("<") > 0) // TODO Maybe use typeArgs to do this?
             {
                 typeNameWithoutGenerics = typeNameWithoutGenerics.substring(0, typeName.indexOf("<"));
             }
