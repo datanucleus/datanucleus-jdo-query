@@ -666,37 +666,22 @@ public class JDOQueryProcessor extends AbstractProcessor
 
     /**
      * Convenience method to return the query expression interface name for a specified type.
-     * @param type The type
+     * @param inputType The type
      * @return The query expression interface name to use
      */
-    private String getExpressionInterfaceNameForType(TypeMirror type)
+    private String getExpressionInterfaceNameForType(TypeMirror inputType)
     {
+        TypeMirror type = inputType;
         List<? extends TypeMirror> typeArgs = null; // Generic type args for this type
         if (type.getKind() == TypeKind.DECLARED)
         {
             typeArgs = ((DeclaredType) type).getTypeArguments();
 
-            if (type instanceof TypeVariable)
-            {
-                // This was needed to detect such as a field with a Bean Validation 2.0 @NotNull, which comes through as 
-                // "(@javax.validation.constraints.NotNull :: theUserType)", so this converts that to "theUserType".
-                // TODO Is this the best way to trap that case ? (i.e "TypeVariable")? probably not, so find a better way
-                // Note that this is also a WildcardType, ReferenceType, ArrayType
-                type = ((DeclaredType)type).asElement().asType();
-            }
+            // This was needed to detect such as a field annotated with a Bean Validation 2.0 @NotNull, which comes through as 
+            // "(@javax.validation.constraints.NotNull :: theUserType)", so this converts that to "theUserType". TODO Is this the best way to trap that case ?
+            type = ((DeclaredType)type).asElement().asType();
         }
-
         String typeName = type.toString();
-        if (typeName.charAt(0) == '@' && typeName.indexOf(' ') > 0)
-        {
-            // If we have a field
-            // @Min(1) private Integer myField;
-            // this sometimes comes through as
-            // @javax.validation.constraints.Min(1L) java.lang.Integer
-            // WHY???
-            // Strip off the annotation part and just use the type name. TODO Find a better way (and reason)
-            typeName = typeName.substring(typeName.indexOf(' ')+1);
-        }
 
         if (type.getKind() == TypeKind.BOOLEAN || Boolean.class.getName().equals(typeName))
         {
@@ -896,27 +881,23 @@ public class JDOQueryProcessor extends AbstractProcessor
 
     /**
      * Convenience method to return the query expression implementation name for a specified type.
-     * @param type The type
+     * @param inputType The type
      * @return The query expression implementation class name to use
      */
-    private String getExpressionImplClassNameForType(TypeMirror type)
+    private String getExpressionImplClassNameForType(TypeMirror inputType)
     {
+        TypeMirror type = inputType;
         List<? extends TypeMirror> typeArgs = null; // Generic type args for this type
         if (type.getKind() == TypeKind.DECLARED)
         {
             typeArgs = ((DeclaredType) type).getTypeArguments();
 
-            if (type instanceof TypeVariable)
-            {
-                // This was needed to detect such as a field with a Bean Validation 2.0 @NotNull, which comes through as 
-                // "(@javax.validation.constraints.NotNull :: theUserType)", so this converts that to "theUserType".
-                // TODO Is this the best way to trap that case ? (i.e "TypeVariable")? probably not, so find a better way
-                // Note that this is also a WildcardType, ReferenceType, ArrayType
-                type = ((DeclaredType)type).asElement().asType();
-            }
+            // This was needed to detect such as a field annotated with a Bean Validation 2.0 @NotNull, which comes through as 
+            // "(@javax.validation.constraints.NotNull :: theUserType)", so this converts that to "theUserType". TODO Is this the best way to trap that case ?
+            type = ((DeclaredType)type).asElement().asType();
         }
-
         String typeName = type.toString();
+
         if (type.getKind() == TypeKind.BOOLEAN || Boolean.class.getName().equals(typeName))
         {
             return "BooleanExpressionImpl";
