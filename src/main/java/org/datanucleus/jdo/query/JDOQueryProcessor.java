@@ -451,8 +451,8 @@ public class JDOQueryProcessor extends AbstractProcessor
     protected void addStaticMethodAccessors(Writer w, String indent, String qclassNameSimple, String classNameSimple)
     throws IOException
     {
-        // Add static accessor for the candidate of this type
-        w.append(indent).append("public static final ").append(qclassNameSimple).append(" jdoCandidate").append(" = candidate(\"this\");\n");
+        // Add static field for the candidate of this type
+        w.append(indent).append("protected static ").append(qclassNameSimple).append(" jdoCandidate").append(" = null;\n");
         w.append("\n");
 
         // Add static method to generate candidate of this type with a particular name
@@ -465,6 +465,10 @@ public class JDOQueryProcessor extends AbstractProcessor
         // Add static method to generate candidate of this type for default name ("this")
         w.append(indent).append("public static " + qclassNameSimple + " candidate()\n");
         w.append(indent).append("{\n");
+        w.append(indent).append(CODE_INDENT).append("if (jdoCandidate == null)\n");
+        w.append(indent).append(CODE_INDENT).append("{\n");
+        w.append(indent).append(CODE_INDENT).append("    jdoCandidate = candidate(\"this\");\n");
+        w.append(indent).append(CODE_INDENT).append("}\n");
         w.append(indent).append(CODE_INDENT).append("return jdoCandidate;\n");
         w.append(indent).append("}\n");
         w.append("\n");
