@@ -9,7 +9,7 @@
     </parent>
 
     <artifactId>datanucleus-jdo-query</artifactId>
-    <version>5.0.10</version>
+    <version>5.0.11-SNAPSHOT</version>
 
     <name>DataNucleus JDO Query</name>
     <description>
@@ -24,7 +24,7 @@
         <connection>scm:git:git@github.com:datanucleus/${project.artifactId}.git</connection>
         <developerConnection>scm:git:git@github.com:datanucleus/${project.artifactId}.git</developerConnection>
         <url>https://github.com/datanucleus/${project.artifactId}</url>
-      <tag>datanucleus-jdo-query-5.0.10</tag>
+      <tag>HEAD</tag>
   </scm>
 
     <dependencies>
